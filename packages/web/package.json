@@ -1,5 +1,5 @@
 {
-  "name": "@byteagent/web",
+  "name": "@memohome/web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,8 +9,8 @@
     "start": "vite preview"
   },
   "dependencies": {
-    "@byteagent/shared": "workspace:*",
-    "@byteagent/ui": "workspace:*",
+    "@memohome/shared": "workspace:*",
+    "@memohome/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.18",
     "dotenv": "^17.2.3",
     "pinia": "^3.0.4",

@@ -80,7 +80,7 @@ importers:
 
   packages/memory:
     dependencies:
-      '@byteagent/db':
+      '@memohome/db':
         specifier: workspace:*
         version: link:../db
       drizzle-orm:
@@ -170,10 +170,10 @@ importers:
 
   packages/web:
     dependencies:
-      '@byteagent/shared':
+      '@memohome/shared':
         specifier: workspace:*
         version: link:../shared
-      '@byteagent/ui':
+      '@memohome/ui':
         specifier: workspace:*
         version: link:../ui
       '@tailwindcss/vite':

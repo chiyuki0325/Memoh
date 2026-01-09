@@ -1,3 +1,3 @@
-# @byteagent/agent
+# @memohome/agent
 
 Agent for PhoneTutor.

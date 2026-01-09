@@ -1,5 +1,5 @@
-import { db } from '@byteagent/db'
-import { memory } from '@byteagent/db/schema'
+import { db } from '@memohome/db'
+import { memory } from '@memohome/db/schema'
 import { and, gte, lte, asc, sql, cosineDistance, gt, desc, eq } from 'drizzle-orm'
 import { MemoryUnit } from './memory-unit'
 

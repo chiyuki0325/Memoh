@@ -2,8 +2,8 @@ import { embed } from 'xsai'
 import { EmbedParams } from './types'
 import { MemoryUnit } from './memory-unit'
 import { rawMemory } from './raw'
-import { db } from '@byteagent/db'
-import { memory } from '@byteagent/db/schema'
+import { db } from '@memohome/db'
+import { memory } from '@memohome/db/schema'
 
 export interface AddMemoryParams extends EmbedParams {
   locale: Intl.LocalesArgument

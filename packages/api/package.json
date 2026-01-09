@@ -1,5 +1,5 @@
 {
-  "name": "@byteagent/api",
+  "name": "@memohome/api",
   "version": "1.0.50",
   "scripts": {
     "dev": "bun run --env-file=../../.env --watch src/index.ts",

@@ -1,1 +1,1 @@
-# @byteagent/memory
+# @memohome/memory

@@ -1,5 +1,5 @@
 {
-  "name": "@byteagent/db",
+  "name": "@memohome/db",
   "version": "1.0.0",
   "type": "module",
   "exports": {

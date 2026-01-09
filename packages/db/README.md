@@ -1,4 +1,4 @@
-# @byteagent/db
+# @memohome/db
 
 ## Quick Start
 
