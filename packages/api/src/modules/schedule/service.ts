@@ -94,6 +94,7 @@ export const createSchedule = async (
   userId: string,
   data: CreateScheduleInput
 ) => {
+  const { scheduleTask } = createScheduler()
   const [newSchedule] = await db
     .insert(schedule)
     .values({
@@ -106,6 +107,15 @@ export const createSchedule = async (
       active: true,
     })
     .returning()
+
+  scheduleTask(userId, {
+    id: newSchedule.id!,
+    pattern: newSchedule.pattern,
+    name: newSchedule.name,
+    description: newSchedule.description,
+    command: newSchedule.command,
+    maxCalls: newSchedule.maxCalls || undefined,
+  })
   
   return newSchedule
 }

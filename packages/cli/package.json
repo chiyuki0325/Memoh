@@ -1,16 +1,39 @@
 {
   "name": "@memohome/cli",
   "version": "1.0.0",
-  "description": "",
+  "description": "Command line interface for MemoHome API",
   "exports": {
     ".": "./src/index.ts"
   },
+  "bin": {
+    "memohome": "./src/index.ts"
+  },
   "scripts": {
-    "start": "bun run src/index.ts"
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/eden": "^1.4.6",
     "@memohome/api": "workspace:*",
-    "@memohome/shared": "workspace:*"
+    "@memohome/shared": "workspace:*",
+    "elysia": "latest",
+    "commander": "^12.1.0",
+    "chalk": "^5.4.1",
+    "ora": "^8.1.1",
+    "inquirer": "^12.3.0",
+    "table": "^6.8.2",
+    "node-fetch": "^3.3.2"
   },
-  "packageManager": "pnpm@10.27.0"
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "bun-types": "latest",
+    "@types/bun": "latest"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "peerDependencies": {
+    "typescript": "^5"
+  }
 }

@@ -1,0 +1,7 @@
+{
+  "extends": ["../../eslint.config.mjs"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}
+

@@ -16,6 +16,7 @@
     "db:migrate": "pnpm --filter @memohome/db migrate",
     "db:generate": "pnpm --filter @memohome/db generate",
     "db:studio": "pnpm --filter @memohome/db studio",
+    "cli": "pnpm --filter @memohome/cli start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest"
