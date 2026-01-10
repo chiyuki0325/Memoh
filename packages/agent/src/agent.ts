@@ -35,7 +35,7 @@ export const createAgent = (params: AgentParams) => {
   }
 
   async function* ask(input: string) {
-    // await loadContext()
+    await loadContext()
     const user = {
       role: 'user',
       content: input,
