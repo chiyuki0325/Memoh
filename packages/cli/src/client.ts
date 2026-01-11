@@ -1,12 +1,12 @@
 import { treaty } from '@elysiajs/eden'
 import { getApiUrl, getToken } from './config'
 
-// 使用动态导入来避免类型错误
+// Use dynamic import to avoid type errors
 export function createClient() {
   const apiUrl = getApiUrl()
   const token = getToken()
 
-  // Eden Treaty 配置
+  // Eden Treaty configuration
   const client = treaty(apiUrl, {
     headers: token ? {
       'Authorization': `Bearer ${token}`,
@@ -20,7 +20,7 @@ export function createClient() {
 export function requireAuth(): string {
   const token = getToken()
   if (!token) {
-    throw new Error('未登录，请先使用 "memohome auth login" 命令登录')
+    throw new Error('Not logged in. Please use "memohome auth login" to login first')
   }
   return token
 }

@@ -9,9 +9,9 @@ import { formatError } from '../utils'
 export function authCommands(program: Command) {
   program
     .command('login')
-    .description('登录到 MemoHome')
-    .option('-u, --username <username>', '用户名')
-    .option('-p, --password <password>', '密码')
+    .description('Login to MemoHome')
+    .option('-u, --username <username>', 'Username')
+    .option('-p, --password <password>', 'Password')
     .action(async (options) => {
       try {
         let username = options.username
@@ -22,13 +22,13 @@ export function authCommands(program: Command) {
             {
               type: 'input',
               name: 'username',
-              message: '请输入用户名:',
+              message: 'Please enter username:',
               when: !username,
             },
             {
               type: 'password',
               name: 'password',
-              message: '请输入密码:',
+              message: 'Please enter password:',
               when: !password,
               mask: '*',
             },
@@ -37,7 +37,7 @@ export function authCommands(program: Command) {
           password = password || answers.password
         }
 
-        const spinner = ora('正在登录...').start()
+        const spinner = ora('Logging in...').start()
         const client = createClient()
 
         const response = await client.auth.login.post({
@@ -46,7 +46,7 @@ export function authCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('登录失败'))
+          spinner.fail(chalk.red('Login failed'))
           console.error(chalk.red(formatError(response.error.value)))
           process.exit(1)
         }
@@ -54,89 +54,89 @@ export function authCommands(program: Command) {
         const data = response.data as { success?: boolean; data?: { token?: string; user?: { username: string; role: string } } } | null
         if (data?.success && data?.data?.token && data?.data?.user) {
           setToken(data.data.token)
-          spinner.succeed(chalk.green('登录成功!'))
-          console.log(chalk.blue(`用户: ${data.data.user.username}`))
-          console.log(chalk.blue(`角色: ${data.data.user.role}`))
+          spinner.succeed(chalk.green('Login successful!'))
+          console.log(chalk.blue(`User: ${data.data.user.username}`))
+          console.log(chalk.blue(`Role: ${data.data.user.role}`))
         } else {
-          spinner.fail(chalk.red('登录失败'))
-          console.error(chalk.red('无效的响应格式'))
+          spinner.fail(chalk.red('Login failed'))
+          console.error(chalk.red('Invalid response format'))
           process.exit(1)
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        console.error(chalk.red('登录错误:'), message)
+        console.error(chalk.red('Login error:'), message)
         process.exit(1)
       }
     })
 
   program
     .command('logout')
-    .description('登出当前用户')
+    .description('Logout current user')
     .action(() => {
       const token = getToken()
       if (!token) {
-        console.log(chalk.yellow('当前未登录'))
+        console.log(chalk.yellow('Not currently logged in'))
         return
       }
 
       clearToken()
-      console.log(chalk.green('✓ 已登出'))
+      console.log(chalk.green('✓ Logged out'))
     })
 
   program
     .command('whoami')
-    .description('查看当前登录用户')
+    .description('View current logged in user')
     .action(async () => {
       try {
         const token = getToken()
         if (!token) {
-          console.log(chalk.yellow('当前未登录'))
-          console.log(chalk.dim('使用 "memohome auth login" 登录'))
+          console.log(chalk.yellow('Not currently logged in'))
+          console.log(chalk.dim('Use "memohome auth login" to login'))
           return
         }
 
-        const spinner = ora('获取用户信息...').start()
+        const spinner = ora('Fetching user information...').start()
         const client = createClient()
 
         const response = await client.auth.me.get()
 
         if (response.error) {
-          spinner.fail(chalk.red('获取用户信息失败'))
+          spinner.fail(chalk.red('Failed to fetch user information'))
           console.error(chalk.red(formatError(response.error.value)))
           process.exit(1)
         }
 
         const data = response.data as { success?: boolean; data?: { username: string; role: string; id: string } } | null
         if (data?.success && data?.data) {
-          spinner.succeed(chalk.green('已登录'))
-          console.log(chalk.blue(`用户名: ${data.data.username}`))
-          console.log(chalk.blue(`角色: ${data.data.role}`))
-          console.log(chalk.blue(`用户ID: ${data.data.id}`))
+          spinner.succeed(chalk.green('Logged in'))
+          console.log(chalk.blue(`Username: ${data.data.username}`))
+          console.log(chalk.blue(`Role: ${data.data.role}`))
+          console.log(chalk.blue(`User ID: ${data.data.id}`))
         } else {
-          spinner.fail(chalk.red('获取用户信息失败'))
+          spinner.fail(chalk.red('Failed to fetch user information'))
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        console.error(chalk.red('错误:'), message)
+        console.error(chalk.red('Error:'), message)
         process.exit(1)
       }
     })
 
   program
     .command('config')
-    .description('查看或设置 API 配置')
-    .option('-s, --set <url>', '设置 API URL')
+    .description('View or set API configuration')
+    .option('-s, --set <url>', 'Set API URL')
     .action((options) => {
       if (options.set) {
         const url = options.set
         setApiUrl(url)
-        console.log(chalk.green(`✓ API URL 已设置为: ${url}`))
+        console.log(chalk.green(`✓ API URL set to: ${url}`))
       } else {
         const apiUrl = getApiUrl()
         const token = getToken()
-        console.log(chalk.blue('当前配置:'))
+        console.log(chalk.blue('Current configuration:'))
         console.log(chalk.dim(`API URL: ${apiUrl}`))
-        console.log(chalk.dim(`已登录: ${token ? '是' : '否'}`))
+        console.log(chalk.dim(`Logged in: ${token ? 'Yes' : 'No'}`))
       }
     })
 }

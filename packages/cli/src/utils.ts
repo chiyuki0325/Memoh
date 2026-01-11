@@ -1,11 +1,11 @@
 import chalk from 'chalk'
 
 /**
- * 格式化 API 错误信息
+ * Format API error information
  */
 export function formatError(error: unknown): string {
   if (error === null || error === undefined) {
-    return '未知错误'
+    return 'Unknown error'
   }
   
   if (typeof error === 'string') {
@@ -13,7 +13,7 @@ export function formatError(error: unknown): string {
   }
   
   if (typeof error === 'object') {
-    // 尝试提取常见的错误字段
+    // Try to extract common error fields
     const errorObj = error as Record<string, unknown>
     
     if ('message' in errorObj && typeof errorObj.message === 'string') {
@@ -24,12 +24,12 @@ export function formatError(error: unknown): string {
       return errorObj.error
     }
     
-    // 如果有 status 和 statusText
+    // If status and statusText exist
     if ('status' in errorObj && 'statusText' in errorObj) {
       return `${errorObj.status} ${errorObj.statusText}`
     }
     
-    // 否则返回格式化的 JSON
+    // Otherwise return formatted JSON
     try {
       return JSON.stringify(error, null, 2)
     } catch {
@@ -41,7 +41,7 @@ export function formatError(error: unknown): string {
 }
 
 /**
- * 打印错误并退出
+ * Print error and exit
  */
 export function exitWithError(message: string, error?: unknown): never {
   console.error(chalk.red(message))
@@ -52,12 +52,12 @@ export function exitWithError(message: string, error?: unknown): never {
 }
 
 /**
- * 处理 Eden Treaty 响应错误
+ * Handle Eden Treaty response errors
  */
-export function handleApiError(response: { error?: { value: unknown } }, defaultMessage = '操作失败'): never {
+export function handleApiError(response: { error?: { value: unknown } }, defaultMessage = 'Operation failed'): never {
   if (response.error) {
     exitWithError(defaultMessage, response.error.value)
   }
-  exitWithError(defaultMessage, '未知错误')
+  exitWithError(defaultMessage, 'Unknown error')
 }
 

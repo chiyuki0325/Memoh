@@ -6,20 +6,20 @@ import { getApiUrl, getToken } from '../client'
 export function debugCommands(program: Command) {
   program
     .command('ping')
-    .description('测试 API 服务器连接')
+    .description('Test API server connection')
     .action(async () => {
       const apiUrl = getApiUrl()
       const token = getToken()
       
-      console.log(chalk.blue('连接信息:'))
+      console.log(chalk.blue('Connection Info:'))
       console.log(chalk.dim(`  API URL: ${apiUrl}`))
-      console.log(chalk.dim(`  Token: ${token ? '已设置' : '未设置'}`))
+      console.log(chalk.dim(`  Token: ${token ? 'Set' : 'Not set'}`))
       console.log()
 
-      const spinner = ora('正在连接...').start()
+      const spinner = ora('Connecting...').start()
       
       try {
-        // 尝试直接 fetch
+        // Try direct fetch
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 5000)
         
@@ -33,20 +33,20 @@ export function debugCommands(program: Command) {
         clearTimeout(timeoutId)
         
         if (response.ok) {
-          spinner.succeed(chalk.green('连接成功!'))
+          spinner.succeed(chalk.green('Connection successful!'))
           const text = await response.text()
-          console.log(chalk.dim('响应:'), text.substring(0, 100))
+          console.log(chalk.dim('Response:'), text.substring(0, 100))
         } else {
-          spinner.fail(chalk.red(`连接失败: HTTP ${response.status}`))
+          spinner.fail(chalk.red(`Connection failed: HTTP ${response.status}`))
         }
       } catch (error) {
-        spinner.fail(chalk.red('连接失败'))
+        spinner.fail(chalk.red('Connection failed'))
         if (error instanceof Error) {
           if (error.name === 'AbortError') {
-            console.error(chalk.yellow('连接超时 (5秒)'))
-            console.error(chalk.dim('请检查 API 服务器是否正在运行'))
+            console.error(chalk.yellow('Connection timeout (5 seconds)'))
+            console.error(chalk.dim('Please check if the API server is running'))
           } else {
-            console.error(chalk.red('错误:'), error.message)
+            console.error(chalk.red('Error:'), error.message)
           }
         }
       }

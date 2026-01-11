@@ -1,4 +1,4 @@
-// API 响应类型定义
+// API response type definitions
 
 export interface ApiResponse<T = unknown> {
   success?: boolean

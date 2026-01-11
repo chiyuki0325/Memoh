@@ -7,12 +7,12 @@ import { createClient, requireAuth } from '../client'
 export function memoryCommands(program: Command) {
   program
     .command('search <query>')
-    .description('搜索记忆')
-    .option('-l, --limit <limit>', '返回结果数量', '10')
+    .description('Search memories')
+    .option('-l, --limit <limit>', 'Number of results to return', '10')
     .action(async (query, options) => {
       try {
         requireAuth()
-        const spinner = ora('搜索记忆...').start()
+        const spinner = ora('Searching memories...').start()
         const client = createClient()
 
         const response = await client.memory.search.get({
@@ -23,40 +23,40 @@ export function memoryCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('搜索失败'))
+          spinner.fail(chalk.red('Search failed'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as any
         if (data?.success && data?.data) {
-          spinner.succeed(chalk.green(`找到 ${data.data.length} 条记忆`))
+          spinner.succeed(chalk.green(`Found ${data.data.length} memories`))
 
           if (data.data.length === 0) {
-            console.log(chalk.yellow('未找到相关记忆'))
+            console.log(chalk.yellow('No related memories found'))
             return
           }
 
           data.data.forEach((item: any, index: number) => {
             console.log()
-            console.log(chalk.blue(`[${index + 1}] 相似度: ${(item.similarity * 100).toFixed(2)}%`))
-            console.log(chalk.dim(`时间: ${new Date(item.timestamp).toLocaleString('zh-CN')}`))
+            console.log(chalk.blue(`[${index + 1}] Similarity: ${(item.similarity * 100).toFixed(2)}%`))
+            console.log(chalk.dim(`Time: ${new Date(item.timestamp).toLocaleString('en-US')}`))
             console.log(chalk.white(item.content))
           })
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('add <content>')
-    .description('添加记忆')
+    .description('Add memory')
     .action(async (content) => {
       try {
         requireAuth()
-        const spinner = ora('添加记忆...').start()
+        const spinner = ora('Adding memory...').start()
         const client = createClient()
 
         const response = await client.memory.post({
@@ -64,17 +64,17 @@ export function memoryCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('添加记忆失败'))
+          spinner.fail(chalk.red('Failed to add memory'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as any
         if (data?.success) {
-          spinner.succeed(chalk.green('记忆已添加'))
+          spinner.succeed(chalk.green('Memory added'))
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
@@ -82,13 +82,13 @@ export function memoryCommands(program: Command) {
   program
     .command('messages')
     .alias('msg')
-    .description('获取消息历史')
-    .option('-p, --page <page>', '页码', '1')
-    .option('-l, --limit <limit>', '每页数量', '20')
+    .description('Get message history')
+    .option('-p, --page <page>', 'Page number', '1')
+    .option('-l, --limit <limit>', 'Items per page', '20')
     .action(async (options) => {
       try {
         requireAuth()
-        const spinner = ora('获取消息历史...').start()
+        const spinner = ora('Fetching message history...').start()
         const client = createClient()
 
         const response = await client.memory.message.get({
@@ -99,7 +99,7 @@ export function memoryCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('获取消息失败'))
+          spinner.fail(chalk.red('Failed to fetch messages'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
@@ -107,46 +107,46 @@ export function memoryCommands(program: Command) {
         const data = response.data as any
         if (data?.success && data?.data) {
           const { messages, pagination } = data.data
-          spinner.succeed(chalk.green(`消息历史 (${pagination.page}/${pagination.totalPages} 页)`))
+          spinner.succeed(chalk.green(`Message History (Page ${pagination.page}/${pagination.totalPages})`))
 
           if (messages.length === 0) {
-            console.log(chalk.yellow('暂无消息'))
+            console.log(chalk.yellow('No messages'))
             return
           }
 
-          console.log(chalk.dim(`\n总计: ${pagination.total} 条消息\n`))
+          console.log(chalk.dim(`\nTotal: ${pagination.total} messages\n`))
 
           messages.forEach((msg: any) => {
             const roleColor = msg.role === 'user' ? chalk.blue : chalk.green
             const roleIcon = msg.role === 'user' ? '👤' : '🤖'
             console.log(roleColor(`${roleIcon} ${msg.role.toUpperCase()}`))
-            console.log(chalk.dim(new Date(msg.timestamp).toLocaleString('zh-CN')))
+            console.log(chalk.dim(new Date(msg.timestamp).toLocaleString('en-US')))
             console.log(chalk.white(msg.content))
             console.log()
           })
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('filter')
-    .description('按日期范围过滤消息')
-    .option('-s, --start <date>', '开始日期 (ISO 8601)')
-    .option('-e, --end <date>', '结束日期 (ISO 8601)')
+    .description('Filter messages by date range')
+    .option('-s, --start <date>', 'Start date (ISO 8601)')
+    .option('-e, --end <date>', 'End date (ISO 8601)')
     .action(async (options) => {
       try {
         requireAuth()
 
         if (!options.start || !options.end) {
-          console.error(chalk.red('请提供开始和结束日期'))
-          console.log(chalk.dim('示例: memohome memory filter -s 2024-01-01T00:00:00Z -e 2024-12-31T23:59:59Z'))
+          console.error(chalk.red('Please provide start and end dates'))
+          console.log(chalk.dim('Example: memohome memory filter -s 2024-01-01T00:00:00Z -e 2024-12-31T23:59:59Z'))
           process.exit(1)
         }
 
-        const spinner = ora('过滤消息...').start()
+        const spinner = ora('Filtering messages...').start()
         const client = createClient()
 
         const response = await client.memory.message.filter.get({
@@ -157,17 +157,17 @@ export function memoryCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('过滤消息失败'))
+          spinner.fail(chalk.red('Failed to filter messages'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as any
         if (data?.success && data?.data) {
-          spinner.succeed(chalk.green(`找到 ${data.data.length} 条消息`))
+          spinner.succeed(chalk.green(`Found ${data.data.length} messages`))
 
           if (data.data.length === 0) {
-            console.log(chalk.yellow('未找到消息'))
+            console.log(chalk.yellow('No messages found'))
             return
           }
 
@@ -177,13 +177,13 @@ export function memoryCommands(program: Command) {
             const roleColor = msg.role === 'user' ? chalk.blue : chalk.green
             const roleIcon = msg.role === 'user' ? '👤' : '🤖'
             console.log(roleColor(`${roleIcon} ${msg.role.toUpperCase()}`))
-            console.log(chalk.dim(new Date(msg.timestamp).toLocaleString('zh-CN')))
+            console.log(chalk.dim(new Date(msg.timestamp).toLocaleString('en-US')))
             console.log(chalk.white(msg.content))
             console.log()
           })
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })

@@ -8,55 +8,55 @@ import { createClient, requireAuth } from '../client'
 export function userCommands(program: Command) {
   program
     .command('list')
-    .description('列出所有用户 (需要管理员权限)')
+    .description('List all users (requires admin privileges)')
     .action(async () => {
       try {
         requireAuth()
-        const spinner = ora('获取用户列表...').start()
+        const spinner = ora('Fetching user list...').start()
         const client = createClient()
 
         const response = await client.user.get()
 
         if (response.error) {
-          spinner.fail(chalk.red('获取用户列表失败'))
+          spinner.fail(chalk.red('Failed to fetch user list'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as any
         if (data?.success && data?.data) {
-          spinner.succeed(chalk.green('用户列表'))
+          spinner.succeed(chalk.green('User List'))
 
           const users = data.data
           if (users.length === 0) {
-            console.log(chalk.yellow('暂无用户'))
+            console.log(chalk.yellow('No users'))
             return
           }
 
           const tableData = [
-            ['ID', '用户名', '角色', '创建时间'],
+            ['ID', 'Username', 'Role', 'Created At'],
             ...users.map((user: any) => [
               user.id,
               user.username,
-              user.role === 'admin' ? chalk.red('管理员') : chalk.blue('用户'),
-              new Date(user.createdAt).toLocaleString('zh-CN'),
+              user.role === 'admin' ? chalk.red('Admin') : chalk.blue('User'),
+              new Date(user.createdAt).toLocaleString('en-US'),
             ]),
           ]
 
           console.log(table(tableData))
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('create')
-    .description('创建新用户 (需要管理员权限)')
-    .option('-u, --username <username>', '用户名')
-    .option('-p, --password <password>', '密码')
-    .option('-r, --role <role>', '角色 (user/admin)', 'user')
+    .description('Create new user (requires admin privileges)')
+    .option('-u, --username <username>', 'Username')
+    .option('-p, --password <password>', 'Password')
+    .option('-r, --role <role>', 'Role (user/admin)', 'user')
     .action(async (options) => {
       try {
         requireAuth()
@@ -70,20 +70,20 @@ export function userCommands(program: Command) {
             {
               type: 'input',
               name: 'username',
-              message: '用户名:',
+              message: 'Username:',
               when: !username,
             },
             {
               type: 'password',
               name: 'password',
-              message: '密码:',
+              message: 'Password:',
               when: !password,
               mask: '*',
             },
             {
               type: 'list',
               name: 'role',
-              message: '角色:',
+              message: 'Role:',
               choices: ['user', 'admin'],
               default: 'user',
               when: !role,
@@ -94,7 +94,7 @@ export function userCommands(program: Command) {
           role = role || answers.role
         }
 
-        const spinner = ora('创建用户...').start()
+        const spinner = ora('Creating user...').start()
         const client = createClient()
 
         const response = await client.user.post({
@@ -104,27 +104,27 @@ export function userCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('创建用户失败'))
+          spinner.fail(chalk.red('Failed to create user'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as any
         if (data?.success && data?.data) {
-          spinner.succeed(chalk.green('用户创建成功'))
-          console.log(chalk.blue(`用户名: ${data.data.username}`))
-          console.log(chalk.blue(`角色: ${data.data.role}`))
+          spinner.succeed(chalk.green('User created successfully'))
+          console.log(chalk.blue(`Username: ${data.data.username}`))
+          console.log(chalk.blue(`Role: ${data.data.role}`))
           console.log(chalk.blue(`ID: ${data.data.id}`))
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('delete <id>')
-    .description('删除用户 (需要管理员权限)')
+    .description('Delete user (requires admin privileges)')
     .action(async (id) => {
       try {
         requireAuth()
@@ -133,47 +133,47 @@ export function userCommands(program: Command) {
           {
             type: 'confirm',
             name: 'confirm',
-            message: chalk.yellow(`确定要删除用户 ${id} 吗?`),
+            message: chalk.yellow(`Are you sure you want to delete user ${id}?`),
             default: false,
           },
         ])
 
         if (!confirm) {
-          console.log(chalk.yellow('已取消'))
+          console.log(chalk.yellow('Cancelled'))
           return
         }
 
-        const spinner = ora('删除用户...').start()
+        const spinner = ora('Deleting user...').start()
         const client = createClient()
 
         const response = await client.user({ id }).delete()
 
         if (response.error) {
-          spinner.fail(chalk.red('删除用户失败'))
+          spinner.fail(chalk.red('Failed to delete user'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
-        spinner.succeed(chalk.green('用户已删除'))
+        spinner.succeed(chalk.green('User deleted'))
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('get <id>')
-    .description('获取用户详情')
+    .description('Get user details')
     .action(async (id) => {
       try {
         requireAuth()
-        const spinner = ora('获取用户信息...').start()
+        const spinner = ora('Fetching user information...').start()
         const client = createClient()
 
         const response = await client.user({ id }).get()
 
         if (response.error) {
-          spinner.fail(chalk.red('获取用户信息失败'))
+          spinner.fail(chalk.red('Failed to fetch user information'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
@@ -181,22 +181,22 @@ export function userCommands(program: Command) {
         const data = response.data as any
         if (data?.success && data?.data) {
           const user = data.data
-          spinner.succeed(chalk.green('用户信息'))
+          spinner.succeed(chalk.green('User Information'))
           console.log(chalk.blue(`ID: ${user.id}`))
-          console.log(chalk.blue(`用户名: ${user.username}`))
-          console.log(chalk.blue(`角色: ${user.role}`))
-          console.log(chalk.blue(`创建时间: ${new Date(user.createdAt).toLocaleString('zh-CN')}`))
+          console.log(chalk.blue(`Username: ${user.username}`))
+          console.log(chalk.blue(`Role: ${user.role}`))
+          console.log(chalk.blue(`Created At: ${new Date(user.createdAt).toLocaleString('en-US')}`))
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('update-password <id>')
-    .description('更新用户密码 (需要管理员权限)')
-    .option('-p, --password <password>', '新密码')
+    .description('Update user password (requires admin privileges)')
+    .option('-p, --password <password>', 'New password')
     .action(async (id, options) => {
       try {
         requireAuth()
@@ -208,14 +208,14 @@ export function userCommands(program: Command) {
             {
               type: 'password',
               name: 'password',
-              message: '新密码:',
+              message: 'New password:',
               mask: '*',
             },
           ])
           password = answers.password
         }
 
-        const spinner = ora('更新密码...').start()
+        const spinner = ora('Updating password...').start()
         const client = createClient()
 
         const response = await client.user({ id }).password.patch({
@@ -223,14 +223,14 @@ export function userCommands(program: Command) {
         })
 
         if (response.error) {
-          spinner.fail(chalk.red('更新密码失败'))
+          spinner.fail(chalk.red('Failed to update password'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
-        spinner.succeed(chalk.green('密码已更新'))
+        spinner.succeed(chalk.green('Password updated'))
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })

@@ -5,9 +5,9 @@ import chalk from 'chalk'
 import { authCommands } from './commands/auth'
 import { userCommands } from './commands/user'
 import { modelCommands } from './commands/model'
-import { agentCommands } from './commands/agent'
+import { agentCommands, startInteractiveMode } from './commands/agent'
 import { memoryCommands } from './commands/memory'
-import { settingsCommands } from './commands/settings'
+import { configCommands } from './commands/config'
 import { scheduleCommands } from './commands/schedule'
 import { debugCommands } from './commands/debug'
 
@@ -15,40 +15,48 @@ const program = new Command()
 
 program
   .name('memohome')
-  .description(chalk.bold.blue('🏠 MemoHome CLI - 智能记忆管理助手'))
+  .description(chalk.bold.blue('🏠 MemoHome Agent'))
   .version('1.0.0')
 
-// 认证命令
-const auth = program.command('auth').description('用户认证管理')
+// Authentication commands
+const auth = program.command('auth').description('User authentication management')
 authCommands(auth)
 
-// 用户管理命令
-const user = program.command('user').description('用户管理 (需要管理员权限)')
+// User management commands
+const user = program.command('user').description('User management (requires admin privileges)')
 userCommands(user)
 
-// 模型管理命令
-const model = program.command('model').description('AI 模型配置管理')
+// Model management commands
+const model = program.command('model').description('AI model configuration management')
 modelCommands(model)
 
-// Agent 对话命令
-const agent = program.command('agent').description('与 AI Agent 对话')
+// Agent conversation commands
+const agent = program.command('agent').description('Chat with AI Agent')
 agentCommands(agent)
 
-// 记忆管理命令
-const memory = program.command('memory').description('记忆管理')
+// Memory management commands
+const memory = program.command('memory').description('Memory management')
 memoryCommands(memory)
 
-// 设置管理命令
-const settings = program.command('settings').description('用户设置管理')
-settingsCommands(settings)
+// Config management commands
+const config = program.command('config').description('User configuration management')
+configCommands(config)
 
-// 日程管理命令
-const schedule = program.command('schedule').description('日程管理')
+// Schedule management commands
+const schedule = program.command('schedule').description('Schedule management')
 scheduleCommands(schedule)
 
-// 调试命令
-const debug = program.command('debug').description('调试工具')
+// Debug commands
+const debug = program.command('debug').description('Debug tools')
 debugCommands(debug)
 
-program.parse()
+// If no arguments provided, start interactive mode
+if (process.argv.length === 2) {
+  startInteractiveMode().catch((error) => {
+    console.error('Failed to start interactive mode:', error)
+    process.exit(1)
+  })
+} else {
+  program.parse()
+}
 

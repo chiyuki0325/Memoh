@@ -4,20 +4,20 @@ import inquirer from 'inquirer'
 import ora from 'ora'
 import { createClient, requireAuth } from '../client'
 
-export function settingsCommands(program: Command) {
+export function configCommands(program: Command) {
   program
     .command('get')
-    .description('获取当前用户设置')
+    .description('Get current user settings')
     .action(async () => {
       try {
         requireAuth()
-        const spinner = ora('获取设置...').start()
+        const spinner = ora('Fetching settings...').start()
         const client = createClient()
 
         const response = await client.settings.get()
 
         if (response.error) {
-          spinner.fail(chalk.red('获取设置失败'))
+          spinner.fail(chalk.red('Failed to fetch settings'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
@@ -25,36 +25,36 @@ export function settingsCommands(program: Command) {
         const data = response.data as any
         if (data?.success && data?.data) {
           const settings = data.data
-          spinner.succeed(chalk.green('当前设置'))
+          spinner.succeed(chalk.green('Current Settings'))
           console.log()
-          console.log(chalk.blue('🎯 Agent 配置:'))
-          console.log(chalk.dim(`  语言: ${settings.language || '未设置'}`))
-          console.log(chalk.dim(`  上下文加载时间: ${settings.maxContextLoadTime || '未设置'} 分钟`))
+          console.log(chalk.blue('🎯 Agent Configuration:'))
+          console.log(chalk.dim(`  Language: ${settings.language || 'Not set'}`))
+          console.log(chalk.dim(`  Context Load Time: ${settings.maxContextLoadTime || 'Not set'} minutes`))
           console.log()
-          console.log(chalk.blue('🤖 默认模型:'))
-          console.log(chalk.dim(`  聊天模型ID: ${settings.defaultChatModel || '未设置'}`))
-          console.log(chalk.dim(`  摘要模型ID: ${settings.defaultSummaryModel || '未设置'}`))
-          console.log(chalk.dim(`  嵌入模型ID: ${settings.defaultEmbeddingModel || '未设置'}`))
+          console.log(chalk.blue('🤖 Default Models:'))
+          console.log(chalk.dim(`  Chat Model ID: ${settings.defaultChatModel || 'Not set'}`))
+          console.log(chalk.dim(`  Summary Model ID: ${settings.defaultSummaryModel || 'Not set'}`))
+          console.log(chalk.dim(`  Embedding Model ID: ${settings.defaultEmbeddingModel || 'Not set'}`))
           console.log()
-          console.log(chalk.blue('📊 其他:'))
-          console.log(chalk.dim(`  用户ID: ${settings.userId}`))
-          console.log(chalk.dim(`  创建时间: ${new Date(settings.createdAt).toLocaleString('zh-CN')}`))
-          console.log(chalk.dim(`  更新时间: ${new Date(settings.updatedAt).toLocaleString('zh-CN')}`))
+          console.log(chalk.blue('📊 Other:'))
+          console.log(chalk.dim(`  User ID: ${settings.userId}`))
+          console.log(chalk.dim(`  Created At: ${new Date(settings.createdAt).toLocaleString('en-US')}`))
+          console.log(chalk.dim(`  Updated At: ${new Date(settings.updatedAt).toLocaleString('en-US')}`))
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('set')
-    .description('更新用户设置')
-    .option('--language <language>', '首选语言')
-    .option('--max-context-time <minutes>', '上下文加载时间（分钟）')
-    .option('--chat-model <id>', '默认聊天模型ID')
-    .option('--summary-model <id>', '默认摘要模型ID')
-    .option('--embedding-model <id>', '默认嵌入模型ID')
+    .description('Update user settings')
+    .option('--language <language>', 'Preferred language')
+    .option('--max-context-time <minutes>', 'Context load time (minutes)')
+    .option('--chat-model <id>', 'Default chat model ID')
+    .option('--summary-model <id>', 'Default summary model ID')
+    .option('--embedding-model <id>', 'Default embedding model ID')
     .action(async (options) => {
       try {
         requireAuth()
@@ -70,8 +70,8 @@ export function settingsCommands(program: Command) {
           updates.defaultEmbeddingModel = options.embeddingModel
 
         if (Object.keys(updates).length === 0) {
-          console.log(chalk.yellow('未提供任何更新参数'))
-          console.log(chalk.dim('\n可用选项:'))
+          console.log(chalk.yellow('No update parameters provided'))
+          console.log(chalk.dim('\nAvailable options:'))
           console.log(chalk.dim('  --language <language>'))
           console.log(chalk.dim('  --max-context-time <minutes>'))
           console.log(chalk.dim('  --chat-model <id>'))
@@ -80,57 +80,57 @@ export function settingsCommands(program: Command) {
           return
         }
 
-        const spinner = ora('更新设置...').start()
+        const spinner = ora('Updating settings...').start()
         const client = createClient()
 
         const response = await client.settings.put(updates)
 
         if (response.error) {
-          spinner.fail(chalk.red('更新设置失败'))
+          spinner.fail(chalk.red('Failed to update settings'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as any
         if (data?.success) {
-          spinner.succeed(chalk.green('设置已更新'))
+          spinner.succeed(chalk.green('Settings updated'))
           console.log()
-          console.log(chalk.blue('更新的设置:'))
+          console.log(chalk.blue('Updated settings:'))
           Object.entries(updates).forEach(([key, value]) => {
             console.log(chalk.dim(`  ${key}: ${value}`))
           })
         }
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })
 
   program
     .command('setup')
-    .description('交互式设置向导')
+    .description('Interactive settings wizard')
     .action(async () => {
       try {
         requireAuth()
 
-        console.log(chalk.green.bold('\n🎨 设置向导\n'))
+        console.log(chalk.green.bold('\n🎨 Settings Wizard\n'))
 
         const answers = await inquirer.prompt([
           {
             type: 'input',
             name: 'language',
-            message: '首选语言:',
+            message: 'Preferred language:',
             default: 'Chinese',
           },
           {
             type: 'number',
             name: 'maxContextLoadTime',
-            message: '上下文加载时间（分钟）:',
+            message: 'Context load time (minutes):',
             default: 60,
             validate: (value) => {
               const num = parseInt(value)
               if (num < 1 || num > 1440) {
-                return '请输入 1-1440 之间的数字'
+                return 'Please enter a number between 1-1440'
               }
               return true
             },
@@ -138,21 +138,21 @@ export function settingsCommands(program: Command) {
           {
             type: 'input',
             name: 'defaultChatModel',
-            message: '默认聊天模型ID (留空跳过):',
+            message: 'Default chat model ID (leave empty to skip):',
           },
           {
             type: 'input',
             name: 'defaultSummaryModel',
-            message: '默认摘要模型ID (留空跳过):',
+            message: 'Default summary model ID (leave empty to skip):',
           },
           {
             type: 'input',
             name: 'defaultEmbeddingModel',
-            message: '默认嵌入模型ID (留空跳过):',
+            message: 'Default embedding model ID (leave empty to skip):',
           },
         ])
 
-        // 过滤掉空值
+        // Filter out empty values
         const updates: any = {}
         Object.entries(answers).forEach(([key, value]) => {
           if (value) {
@@ -160,20 +160,20 @@ export function settingsCommands(program: Command) {
           }
         })
 
-        const spinner = ora('保存设置...').start()
+        const spinner = ora('Saving settings...').start()
         const client = createClient()
 
         const response = await client.settings.put(updates)
 
         if (response.error) {
-          spinner.fail(chalk.red('保存设置失败'))
+          spinner.fail(chalk.red('Failed to save settings'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
-        spinner.succeed(chalk.green('设置已保存'))
+        spinner.succeed(chalk.green('Settings saved'))
       } catch (error: any) {
-        console.error(chalk.red('错误:'), error.message)
+        console.error(chalk.red('Error:'), error.message)
         process.exit(1)
       }
     })

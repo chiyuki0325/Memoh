@@ -10,9 +10,9 @@ import { formatError } from '../utils'
 export function modelCommands(program: Command) {
   program
     .command('list')
-    .description('列出所有模型配置')
+    .description('List all model configurations')
     .action(async () => {
-      const spinner = ora('获取模型列表...').start()
+      const spinner = ora('Fetching model list...').start()
       try {
         requireAuth()
         const client = createClient()
@@ -20,24 +20,24 @@ export function modelCommands(program: Command) {
         const response = await client.model.get()
 
         if (response.error) {
-          spinner.fail(chalk.red('获取模型列表失败'))
+          spinner.fail(chalk.red('Failed to fetch model list'))
           console.error(chalk.red(formatError(response.error.value)))
           process.exit(1)
         }
 
-        // API 返回格式: { success, items, pagination }
+        // API response format: { success, items, pagination }
         const data = response.data as { success?: boolean; items?: Model[]; pagination?: unknown } | null
         if (data?.success && data?.items) {
-          spinner.succeed(chalk.green('模型列表'))
+          spinner.succeed(chalk.green('Model List'))
 
           const models = data.items
           if (models.length === 0) {
-            console.log(chalk.yellow('暂无模型配置'))
+            console.log(chalk.yellow('No model configurations found'))
             return
           }
 
           const tableData = [
-            ['ID', '名称', '模型ID', '类型', '客户端'],
+            ['ID', 'Name', 'Model ID', 'Type', 'Client'],
             ...models.map((item: unknown) => {
               const modelItem = item as { id: string; model: Model }
               return [
@@ -53,19 +53,19 @@ export function modelCommands(program: Command) {
           console.log(table(tableData))
         }
       } catch (error) {
-        spinner.fail(chalk.red('操作失败'))
+        spinner.fail(chalk.red('Operation failed'))
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             const { getApiUrl: getUrl } = await import('../config')
-            console.error(chalk.red('连接超时，请检查：'))
-            console.error(chalk.yellow('  1. API 服务器是否正在运行'))
-            console.error(chalk.yellow('  2. API 地址是否正确'))
-            console.error(chalk.dim(`     当前配置: ${getUrl()}`))
+            console.error(chalk.red('Connection timeout, please check:'))
+            console.error(chalk.yellow('  1. Is the API server running?'))
+            console.error(chalk.yellow('  2. Is the API URL correct?'))
+            console.error(chalk.dim(`     Current config: ${getUrl()}`))
           } else {
-            console.error(chalk.red('错误:'), error.message)
+            console.error(chalk.red('Error:'), error.message)
           }
         } else {
-          console.error(chalk.red('错误:'), String(error))
+          console.error(chalk.red('Error:'), String(error))
         }
         process.exit(1)
       }
@@ -73,16 +73,16 @@ export function modelCommands(program: Command) {
 
   program
     .command('create')
-    .description('创建模型配置')
-    .option('-n, --name <name>', '模型名称')
-    .option('-m, --model-id <modelId>', '模型ID')
+    .description('Create model configuration')
+    .option('-n, --name <name>', 'Model name')
+    .option('-m, --model-id <modelId>', 'Model ID')
     .option('-u, --base-url <baseUrl>', 'API Base URL')
     .option('-k, --api-key <apiKey>', 'API Key')
-    .option('-c, --client-type <clientType>', '客户端类型 (openai/anthropic/google)')
-    .option('-t, --type <type>', '模型类型 (chat/embedding)', 'chat')
-    .option('-d, --dimensions <dimensions>', 'Embedding 维度 (仅 embedding 类型需要)')
+    .option('-c, --client-type <clientType>', 'Client type (openai/anthropic/google)')
+    .option('-t, --type <type>', 'Model type (chat/embedding)', 'chat')
+    .option('-d, --dimensions <dimensions>', 'Embedding dimensions (required for embedding type)')
     .action(async (options) => {
-      const spinner = ora('创建模型配置...').start()
+      const spinner = ora('Creating model configuration...').start()
       try {
         requireAuth()
 
@@ -93,13 +93,13 @@ export function modelCommands(program: Command) {
             {
               type: 'input',
               name: 'name',
-              message: '模型名称:',
+              message: 'Model name:',
               when: !name,
             },
             {
               type: 'input',
               name: 'modelId',
-              message: '模型ID (如 gpt-4 或 text-embedding-3-small):',
+              message: 'Model ID (e.g., gpt-4 or text-embedding-3-small):',
               when: !modelId,
             },
             {
@@ -119,7 +119,7 @@ export function modelCommands(program: Command) {
             {
               type: 'list',
               name: 'clientType',
-              message: '客户端类型:',
+              message: 'Client type:',
               choices: ['openai', 'anthropic', 'google'],
               default: 'openai',
               when: !clientType,
@@ -127,7 +127,7 @@ export function modelCommands(program: Command) {
             {
               type: 'list',
               name: 'type',
-              message: '模型类型:',
+              message: 'Model type:',
               choices: ['chat', 'embedding'],
               default: 'chat',
               when: !type,
@@ -142,23 +142,23 @@ export function modelCommands(program: Command) {
           type = type || answers.type
         }
 
-        // 如果是 embedding 类型，需要 dimensions
+        // If embedding type, dimensions is required
         if (type === 'embedding' && !dimensions) {
           const answer = await inquirer.prompt([
             {
               type: 'number',
               name: 'dimensions',
-              message: 'Embedding 维度 (如 1536):',
+              message: 'Embedding dimensions (e.g., 1536):',
               validate: (value: number) => {
                 if (value > 0) return true
-                return '维度必须是正整数'
+                return 'Dimensions must be a positive integer'
               },
             },
           ])
           dimensions = answer.dimensions
         }
 
-        spinner.text = '创建模型配置...'
+        spinner.text = 'Creating model configuration...'
         const client = createClient()
 
         const payload: Record<string, unknown> = {
@@ -170,10 +170,10 @@ export function modelCommands(program: Command) {
           type,
         }
 
-        // 如果是 embedding 类型，添加 dimensions
+        // If embedding type, add dimensions
         if (type === 'embedding') {
           if (!dimensions) {
-            console.error(chalk.red('Embedding 模型需要指定 dimensions'))
+            console.error(chalk.red('Embedding models require dimensions to be specified'))
             process.exit(1)
           }
           payload.dimensions = typeof dimensions === 'number' ? dimensions : parseInt(dimensions)
@@ -182,36 +182,36 @@ export function modelCommands(program: Command) {
         const response = await client.model.post(payload)
 
         if (response.error) {
-          spinner.fail(chalk.red('创建模型配置失败'))
+          spinner.fail(chalk.red('Failed to create model configuration'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
         const data = response.data as ApiResponse<Model> | null
         if (data?.success && data?.data) {
-          spinner.succeed(chalk.green('模型配置创建成功'))
-          console.log(chalk.blue(`名称: ${data.data.name}`))
-          console.log(chalk.blue(`模型ID: ${data.data.modelId}`))
-          console.log(chalk.blue(`类型: ${data.data.type || 'chat'}`))
+          spinner.succeed(chalk.green('Model configuration created successfully'))
+          console.log(chalk.blue(`Name: ${data.data.name}`))
+          console.log(chalk.blue(`Model ID: ${data.data.modelId}`))
+          console.log(chalk.blue(`Type: ${data.data.type || 'chat'}`))
           if (data.data.type === 'embedding' && data.data.dimensions) {
-            console.log(chalk.blue(`维度: ${data.data.dimensions}`))
+            console.log(chalk.blue(`Dimensions: ${data.data.dimensions}`))
           }
           console.log(chalk.blue(`ID: ${data.data.id}`))
         }
       } catch (error) {
-        spinner.fail(chalk.red('操作失败'))
+        spinner.fail(chalk.red('Operation failed'))
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             const { getApiUrl: getUrl } = await import('../config')
-            console.error(chalk.red('连接超时，请检查：'))
-            console.error(chalk.yellow('  1. API 服务器是否正在运行'))
-            console.error(chalk.yellow('  2. API 地址是否正确'))
-            console.error(chalk.dim(`     当前配置: ${getUrl()}`))
+            console.error(chalk.red('Connection timeout, please check:'))
+            console.error(chalk.yellow('  1. Is the API server running?'))
+            console.error(chalk.yellow('  2. Is the API URL correct?'))
+            console.error(chalk.dim(`     Current config: ${getUrl()}`))
           } else {
-            console.error(chalk.red('错误:'), error.message)
+            console.error(chalk.red('Error:'), error.message)
           }
         } else {
-          console.error(chalk.red('错误:'), String(error))
+          console.error(chalk.red('Error:'), String(error))
         }
         process.exit(1)
       }
@@ -219,7 +219,7 @@ export function modelCommands(program: Command) {
 
   program
     .command('delete <id>')
-    .description('删除模型配置')
+    .description('Delete model configuration')
     .action(async (id) => {
       let spinner: ReturnType<typeof ora> | undefined
       try {
@@ -229,42 +229,42 @@ export function modelCommands(program: Command) {
           {
             type: 'confirm',
             name: 'confirm',
-            message: chalk.yellow(`确定要删除模型配置 ${id} 吗?`),
+            message: chalk.yellow(`Are you sure you want to delete model configuration ${id}?`),
             default: false,
           },
         ])
 
         if (!confirm) {
-          console.log(chalk.yellow('已取消'))
+          console.log(chalk.yellow('Cancelled'))
           return
         }
 
-        spinner = ora('删除模型配置...').start()
+        spinner = ora('Deleting model configuration...').start()
         const client = createClient()
 
         const response = await client.model({ id }).delete()
 
         if (response.error) {
-          spinner.fail(chalk.red('删除模型配置失败'))
+          spinner.fail(chalk.red('Failed to delete model configuration'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
 
-        if (spinner) spinner.succeed(chalk.green('模型配置已删除'))
+        if (spinner) spinner.succeed(chalk.green('Model configuration deleted'))
       } catch (error) {
-        if (spinner) spinner.fail(chalk.red('操作失败'))
+        if (spinner) spinner.fail(chalk.red('Operation failed'))
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             const { getApiUrl: getUrl } = await import('../config')
-            console.error(chalk.red('连接超时，请检查：'))
-            console.error(chalk.yellow('  1. API 服务器是否正在运行'))
-            console.error(chalk.yellow('  2. API 地址是否正确'))
-            console.error(chalk.dim(`     当前配置: ${getUrl()}`))
+            console.error(chalk.red('Connection timeout, please check:'))
+            console.error(chalk.yellow('  1. Is the API server running?'))
+            console.error(chalk.yellow('  2. Is the API URL correct?'))
+            console.error(chalk.dim(`     Current config: ${getUrl()}`))
           } else {
-            console.error(chalk.red('错误:'), error.message)
+            console.error(chalk.red('Error:'), error.message)
           }
         } else {
-          console.error(chalk.red('错误:'), String(error))
+          console.error(chalk.red('Error:'), String(error))
         }
         process.exit(1)
       }
@@ -272,9 +272,9 @@ export function modelCommands(program: Command) {
 
   program
     .command('get <id>')
-    .description('获取模型配置详情')
+    .description('Get model configuration details')
     .action(async (id) => {
-      const spinner = ora('获取模型配置...').start()
+      const spinner = ora('Fetching model configuration...').start()
       try {
         requireAuth()
         const client = createClient()
@@ -282,7 +282,7 @@ export function modelCommands(program: Command) {
         const response = await client.model({ id }).get()
 
         if (response.error) {
-          spinner.fail(chalk.red('获取模型配置失败'))
+          spinner.fail(chalk.red('Failed to fetch model configuration'))
           console.error(chalk.red(response.error.value))
           process.exit(1)
         }
@@ -290,32 +290,32 @@ export function modelCommands(program: Command) {
         const data = response.data as ApiResponse<Model> | null
         if (data?.success && data?.data) {
           const model = data.data
-          spinner.succeed(chalk.green('模型配置'))
+          spinner.succeed(chalk.green('Model Configuration'))
           console.log(chalk.blue(`ID: ${model.id}`))
-          console.log(chalk.blue(`名称: ${model.name}`))
-          console.log(chalk.blue(`模型ID: ${model.modelId}`))
-          console.log(chalk.blue(`类型: ${model.type || 'chat'}`))
+          console.log(chalk.blue(`Name: ${model.name}`))
+          console.log(chalk.blue(`Model ID: ${model.modelId}`))
+          console.log(chalk.blue(`Type: ${model.type || 'chat'}`))
           if (model.type === 'embedding' && model.dimensions) {
-            console.log(chalk.blue(`维度: ${model.dimensions}`))
+            console.log(chalk.blue(`Dimensions: ${model.dimensions}`))
           }
           console.log(chalk.blue(`Base URL: ${model.baseUrl}`))
-          console.log(chalk.blue(`客户端类型: ${model.clientType}`))
-          console.log(chalk.blue(`创建时间: ${new Date(model.createdAt).toLocaleString('zh-CN')}`))
+          console.log(chalk.blue(`Client Type: ${model.clientType}`))
+          console.log(chalk.blue(`Created At: ${new Date(model.createdAt).toLocaleString('en-US')}`))
         }
       } catch (error) {
-        spinner.fail(chalk.red('操作失败'))
+        spinner.fail(chalk.red('Operation failed'))
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             const { getApiUrl: getUrl } = await import('../config')
-            console.error(chalk.red('连接超时，请检查：'))
-            console.error(chalk.yellow('  1. API 服务器是否正在运行'))
-            console.error(chalk.yellow('  2. API 地址是否正确'))
-            console.error(chalk.dim(`     当前配置: ${getUrl()}`))
+            console.error(chalk.red('Connection timeout, please check:'))
+            console.error(chalk.yellow('  1. Is the API server running?'))
+            console.error(chalk.yellow('  2. Is the API URL correct?'))
+            console.error(chalk.dim(`     Current config: ${getUrl()}`))
           } else {
-            console.error(chalk.red('错误:'), error.message)
+            console.error(chalk.red('Error:'), error.message)
           }
         } else {
-          console.error(chalk.red('错误:'), String(error))
+          console.error(chalk.red('Error:'), String(error))
         }
         process.exit(1)
       }
@@ -323,9 +323,9 @@ export function modelCommands(program: Command) {
 
   program
     .command('defaults')
-    .description('查看默认模型配置')
+    .description('View default model configurations')
     .action(async () => {
-      const spinner = ora('获取默认模型配置...').start()
+      const spinner = ora('Fetching default model configurations...').start()
       try {
         requireAuth()
         const client = createClient()
@@ -338,19 +338,19 @@ export function modelCommands(program: Command) {
 
         spinner.stop()
 
-        console.log(chalk.green.bold('默认模型配置:'))
+        console.log(chalk.green.bold('Default Model Configurations:'))
         console.log()
 
         // Chat Model
         const chatData = chatRes.data as ApiResponse<Model> | null
         if (chatData?.success && chatData.data) {
           const model = chatData.data
-          console.log(chalk.blue('💬 聊天模型:'))
-          console.log(chalk.dim(`  名称: ${model.name}`))
-          console.log(chalk.dim(`  模型ID: ${model.modelId}`))
+          console.log(chalk.blue('💬 Chat Model:'))
+          console.log(chalk.dim(`  Name: ${model.name}`))
+          console.log(chalk.dim(`  Model ID: ${model.modelId}`))
           console.log(chalk.dim(`  ID: ${model.id}`))
         } else {
-          console.log(chalk.yellow('💬 聊天模型: 未配置'))
+          console.log(chalk.yellow('💬 Chat Model: Not configured'))
         }
         console.log()
 
@@ -358,12 +358,12 @@ export function modelCommands(program: Command) {
         const summaryData = summaryRes.data as ApiResponse<Model> | null
         if (summaryData?.success && summaryData.data) {
           const model = summaryData.data
-          console.log(chalk.blue('📝 摘要模型:'))
-          console.log(chalk.dim(`  名称: ${model.name}`))
-          console.log(chalk.dim(`  模型ID: ${model.modelId}`))
+          console.log(chalk.blue('📝 Summary Model:'))
+          console.log(chalk.dim(`  Name: ${model.name}`))
+          console.log(chalk.dim(`  Model ID: ${model.modelId}`))
           console.log(chalk.dim(`  ID: ${model.id}`))
         } else {
-          console.log(chalk.yellow('📝 摘要模型: 未配置'))
+          console.log(chalk.yellow('📝 Summary Model: Not configured'))
         }
         console.log()
 
@@ -371,27 +371,27 @@ export function modelCommands(program: Command) {
         const embeddingData = embeddingRes.data as ApiResponse<Model> | null
         if (embeddingData?.success && embeddingData.data) {
           const model = embeddingData.data
-          console.log(chalk.blue('🔍 嵌入模型:'))
-          console.log(chalk.dim(`  名称: ${model.name}`))
-          console.log(chalk.dim(`  模型ID: ${model.modelId}`))
+          console.log(chalk.blue('🔍 Embedding Model:'))
+          console.log(chalk.dim(`  Name: ${model.name}`))
+          console.log(chalk.dim(`  Model ID: ${model.modelId}`))
           console.log(chalk.dim(`  ID: ${model.id}`))
         } else {
-          console.log(chalk.yellow('🔍 嵌入模型: 未配置'))
+          console.log(chalk.yellow('🔍 Embedding Model: Not configured'))
         }
       } catch (error) {
-        spinner.fail(chalk.red('操作失败'))
+        spinner.fail(chalk.red('Operation failed'))
         if (error instanceof Error) {
           if (error.name === 'AbortError' || error.name === 'TimeoutError') {
             const { getApiUrl: getUrl } = await import('../config')
-            console.error(chalk.red('连接超时，请检查：'))
-            console.error(chalk.yellow('  1. API 服务器是否正在运行'))
-            console.error(chalk.yellow('  2. API 地址是否正确'))
-            console.error(chalk.dim(`     当前配置: ${getUrl()}`))
+            console.error(chalk.red('Connection timeout, please check:'))
+            console.error(chalk.yellow('  1. Is the API server running?'))
+            console.error(chalk.yellow('  2. Is the API URL correct?'))
+            console.error(chalk.dim(`     Current config: ${getUrl()}`))
           } else {
-            console.error(chalk.red('错误:'), error.message)
+            console.error(chalk.red('Error:'), error.message)
           }
         } else {
-          console.error(chalk.red('错误:'), String(error))
+          console.error(chalk.red('Error:'), String(error))
         }
         process.exit(1)
       }
