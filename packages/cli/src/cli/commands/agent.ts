@@ -48,7 +48,6 @@ export async function startInteractiveMode(options: { maxContextTime?: string; l
         await agentCore.chatStream(
           {
             message: input,
-            maxContextLoadTime: parseInt(options.maxContextTime || '60'),
             language: options.language || 'Chinese',
           },
           async (event) => {
@@ -96,7 +95,6 @@ export function agentCommands(program: Command) {
         await agentCore.chatStream(
           {
             message,
-            maxContextLoadTime: parseInt(options.maxContextTime),
             language: options.language,
           },
           async (event) => {

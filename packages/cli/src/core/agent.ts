@@ -3,7 +3,6 @@ import type { MemohContext } from './context'
 
 export interface ChatParams {
   message: string
-  maxContextLoadTime?: number
   language?: string
 }
 
@@ -67,7 +66,6 @@ async function performStreamChat(
     },
     body: JSON.stringify({
       message: params.message,
-      maxContextLoadTime: params.maxContextLoadTime || 60,
       language: params.language || 'Chinese',
     }),
   })

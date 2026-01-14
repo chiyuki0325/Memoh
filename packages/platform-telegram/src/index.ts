@@ -177,7 +177,6 @@ export class TelegramPlatform extends BasePlatform {
         {
           message,
           language: 'Chinese',
-          maxContextLoadTime: 60,
         },
         async (event: StreamEvent) => {
           if (event.type === 'text-delta' && event.text) {
