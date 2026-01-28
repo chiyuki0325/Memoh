@@ -20,7 +20,7 @@ const ChatBody = z.object({
   platforms: z.array(z.string()).optional(),
   currentPlatform: z.string().optional(),
 
-  messages: z.array(z.object()),
+  messages: z.array(z.any()),
   query: z.string().min(1, 'Query is required'),
 })
 

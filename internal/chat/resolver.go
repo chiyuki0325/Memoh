@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -275,9 +276,20 @@ func (r *Resolver) streamChat(ctx context.Context, payload agentGatewayRequest, 
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 
+	currentEventType := ""
+	stored := false
+	log.Printf("chat stream started user_id=%s", userID)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if line == "" || !strings.HasPrefix(line, "data:") {
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "event:") {
+			currentEventType = strings.TrimSpace(strings.TrimPrefix(line, "event:"))
+			log.Printf("chat stream event=%s", currentEventType)
+			continue
+		}
+		if !strings.HasPrefix(line, "data:") {
 			continue
 		}
 		data := strings.TrimSpace(strings.TrimPrefix(line, "data:"))
@@ -286,25 +298,14 @@ func (r *Resolver) streamChat(ctx context.Context, payload agentGatewayRequest, 
 		}
 		chunkChan <- StreamChunk([]byte(data))
 
-		var envelope struct {
-			Type string          `json:"type"`
-			Data json.RawMessage `json:"data"`
-		}
-		if err := json.Unmarshal([]byte(data), &envelope); err != nil {
+		if stored {
 			continue
 		}
-		if envelope.Type != "done" || len(envelope.Data) == 0 {
-			continue
-		}
-		var parsed agentGatewayResponse
-		if err := json.Unmarshal(envelope.Data, &parsed); err != nil {
-			continue
-		}
-		if err := r.storeHistory(ctx, userID, query, parsed.Messages); err != nil {
+
+		if handled, err := r.tryStoreFromStreamPayload(ctx, userID, query, currentEventType, data); err != nil {
 			return err
-		}
-		if err := r.storeMemory(ctx, userID, query, parsed.Messages); err != nil {
-			return err
+		} else if handled {
+			stored = true
 		}
 	}
 
@@ -378,6 +379,9 @@ func (r *Resolver) storeHistory(ctx context.Context, userID, query string, respo
 		},
 		User: pgUserID,
 	})
+	if err == nil {
+		log.Printf("history saved user_id=%s messages=%d", userID, len(messages))
+	}
 	return err
 }
 
@@ -417,6 +421,60 @@ func (r *Resolver) storeMemory(ctx context.Context, userID, query string, respon
 		UserID:   userID,
 	})
 	return err
+}
+
+func (r *Resolver) tryStoreFromStreamPayload(ctx context.Context, userID, query, eventType, data string) (bool, error) {
+	// Case 1: event: done + data: {messages: [...]}
+	if eventType == "done" {
+		if parsed, ok := parseGatewayResponse([]byte(data)); ok {
+			log.Printf("chat stream done payload messages=%d", len(parsed.Messages))
+			return r.storeRound(ctx, userID, query, parsed.Messages)
+		}
+	}
+
+	// Case 2: data: {"type":"done","data":{messages:[...]}}
+	var envelope struct {
+		Type string          `json:"type"`
+		Data json.RawMessage `json:"data"`
+	}
+	if err := json.Unmarshal([]byte(data), &envelope); err == nil {
+		if envelope.Type == "done" && len(envelope.Data) > 0 {
+			if parsed, ok := parseGatewayResponse(envelope.Data); ok {
+				log.Printf("chat stream done envelope messages=%d", len(parsed.Messages))
+				return r.storeRound(ctx, userID, query, parsed.Messages)
+			}
+		}
+	}
+
+	// Case 3: data: {messages:[...]} without event
+	if parsed, ok := parseGatewayResponse([]byte(data)); ok {
+		log.Printf("chat stream done implicit messages=%d", len(parsed.Messages))
+		return r.storeRound(ctx, userID, query, parsed.Messages)
+	}
+	return false, nil
+}
+
+func parseGatewayResponse(payload []byte) (agentGatewayResponse, bool) {
+	var parsed agentGatewayResponse
+	if err := json.Unmarshal(payload, &parsed); err != nil {
+		return agentGatewayResponse{}, false
+	}
+	if len(parsed.Messages) == 0 {
+		return agentGatewayResponse{}, false
+	}
+	return parsed, true
+}
+
+func (r *Resolver) storeRound(ctx context.Context, userID, query string, messages []GatewayMessage) (bool, error) {
+	if err := r.storeHistory(ctx, userID, query, messages); err != nil {
+		log.Printf("chat stream storeHistory error=%v", err)
+		return true, err
+	}
+	if err := r.storeMemory(ctx, userID, query, messages); err != nil {
+		log.Printf("chat stream storeMemory error=%v", err)
+		return true, err
+	}
+	return true, nil
 }
 
 func gatewayMessageToMemory(msg GatewayMessage) (string, string) {

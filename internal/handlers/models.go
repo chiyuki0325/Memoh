@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/labstack/echo/v4"
 
@@ -121,6 +122,11 @@ func (h *ModelsHandler) GetByModelID(c echo.Context) error {
 	if modelID == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "modelId is required")
 	}
+	if decoded, err := url.PathUnescape(modelID); err == nil {
+		modelID = decoded
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid modelId")
+	}
 
 	resp, err := h.service.GetByModelID(c.Request().Context(), modelID)
 	if err != nil {
@@ -174,6 +180,11 @@ func (h *ModelsHandler) UpdateByModelID(c echo.Context) error {
 	if modelID == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "modelId is required")
 	}
+	if decoded, err := url.PathUnescape(modelID); err == nil {
+		modelID = decoded
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid modelId")
+	}
 
 	var req models.UpdateRequest
 	if err := c.Bind(&req); err != nil {
@@ -223,6 +234,11 @@ func (h *ModelsHandler) DeleteByModelID(c echo.Context) error {
 	modelID := c.Param("modelId")
 	if modelID == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "modelId is required")
+	}
+	if decoded, err := url.PathUnescape(modelID); err == nil {
+		modelID = decoded
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid modelId")
 	}
 
 	if err := h.service.DeleteByModelID(c.Request().Context(), modelID); err != nil {
