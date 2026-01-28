@@ -8,9 +8,7 @@ import {
 } from '@memoh/ui'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiTranslate } from '@mdi/js'
-import i18n from './i18n'
 
-console.log(i18n.global.locale)
 </script>
 
 <template>

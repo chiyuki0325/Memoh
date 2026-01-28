@@ -1,5 +1,8 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div
+    ref="displayContainer"
+    class="flex flex-col gap-4"
+  >
     <template
       v-for="chatItem in chatList"
       :key="chatItem.id"
@@ -19,18 +22,67 @@
 <script setup lang="ts">
 import UserChat from './UserChat/index.vue'
 import RobotChat from './RobotChat/index.vue'
-import { reactive } from 'vue'
-import type { user, robot } from '@memoh/shared'
-
+import { inject, ref, watch } from 'vue'
+import { useElementBounding } from '@vueuse/core'
+import {useChatList} from '@/store/ChatList'
 // 模拟一下数据
-const chatList = reactive<(((user | robot)))[]>([{
-  description: 'fjiwofwofjewifwe', time: new Date, id: 2, action: 'user'
+const {chatList,add} = useChatList()
+
+const chatSay = inject('chatSay', ref(''))
+// 模拟一下对话
+watch(chatSay, () => {
+  if (chatSay.value) {
+    add({
+      description: chatSay.value,
+      time: new Date(),
+      action: 'user',
+      id: 1
+    })
+   
+    add({
+      description: '',
+      time: new Date(),
+      action: 'robot',
+      id: 2,
+      type: 'Openai Gpt5',
+      state:'thinking'
+    })   
+    chatSay.value=''
+  }
 }, {
-  description: 'fjiwofwofjefwfewfwifwe', time: new Date, id: 1000, action: 'robot', type: 'Openai Gpt5'
-}, {
-  description: 'fjiwofwofjewifwe', time: new Date, id: 2, action: 'user'
-}, {
-  description: 'fjiwofwofjefwfewfwifwe', time: new Date, id: 1000, action: 'robot', type: 'Openai Gpt5'
-}])
+  immediate: true
+})
+
+const displayContainer = ref()
+const { height,top } = useElementBounding(displayContainer)
+
+let prevScroll = 0, curScroll = 0, autoScroll = true
+
+watch(top, () => {
+  const container = displayContainer.value?.parentElement?.parentElement
+  if ((container?.scrollHeight - container.clientHeight - container.scrollTop) < 1) {
+    autoScroll = true
+    prevScroll=curScroll=container.scrollTop
+  }
+})
+
+watch(height, () => {
+  const container = displayContainer.value?.parentElement?.parentElement
+  if (container) {
+    curScroll = container.scrollTop
+    if (curScroll < prevScroll) {
+      autoScroll = false
+    }
+    prevScroll = curScroll
+  }
+ 
+  if (!(container && (container?.scrollHeight - container.clientHeight - container.scrollTop) < 1)&&autoScroll) {
+    container.scrollTo({
+      top: container?.scrollHeight - container.clientHeight,
+      behavior: 'smooth',
+    })
+  } 
+})
+
 
 </script>

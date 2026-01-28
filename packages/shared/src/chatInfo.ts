@@ -3,7 +3,8 @@ export interface robot{
   time: Date,
   id: string | number,
   type: string,
-  action:'robot'
+  action: 'robot',
+  state:'thinking'|'generate'|'complete'
 }
 
 export interface user{

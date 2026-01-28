@@ -1,7 +1,7 @@
 <template>
   <div class="flex">
     <p
-      class="leading-7 not-first:mt-6 max-w-[90%] ml-auto text-muted-foreground bg-[#F9F9F9] p-4 rounded-xl rounded-tr-none
+      class="leading-7 not-first:mt-6 max-w-[90%] ml-auto text-muted-foreground bg-[#F9F9F9] p-4 rounded-xl rounded-tr-none break-all
 "
     >
       {{ userSay.description }}
