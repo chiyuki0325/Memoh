@@ -36,17 +36,7 @@ func (s *Service) Get(ctx context.Context, userID string) (Settings, error) {
 		}
 		return Settings{}, err
 	}
-	settings := Settings{
-		MaxContextLoadTime: int(row.MaxContextLoadTime),
-		Language:           strings.TrimSpace(row.Language),
-	}
-	if settings.MaxContextLoadTime <= 0 {
-		settings.MaxContextLoadTime = DefaultMaxContextLoadTime
-	}
-	if settings.Language == "" {
-		settings.Language = DefaultLanguage
-	}
-	return settings, nil
+	return normalizeUserSetting(row), nil
 }
 
 func (s *Service) Upsert(ctx context.Context, userID string, req UpsertRequest) (Settings, error) {
@@ -67,14 +57,7 @@ func (s *Service) Upsert(ctx context.Context, userID string, req UpsertRequest) 
 		return Settings{}, err
 	}
 	if err == nil {
-		current.MaxContextLoadTime = int(existing.MaxContextLoadTime)
-		current.Language = strings.TrimSpace(existing.Language)
-		if current.MaxContextLoadTime <= 0 {
-			current.MaxContextLoadTime = DefaultMaxContextLoadTime
-		}
-		if current.Language == "" {
-			current.Language = DefaultLanguage
-		}
+		current = normalizeUserSetting(existing)
 	}
 
 	if req.MaxContextLoadTime != nil && *req.MaxContextLoadTime > 0 {
@@ -106,6 +89,20 @@ func (s *Service) Delete(ctx context.Context, userID string) error {
 	return s.queries.DeleteSettingsByUserID(ctx, pgID)
 }
 
+func normalizeUserSetting(row sqlc.UserSetting) Settings {
+	settings := Settings{
+		MaxContextLoadTime: int(row.MaxContextLoadTime),
+		Language:           strings.TrimSpace(row.Language),
+	}
+	if settings.MaxContextLoadTime <= 0 {
+		settings.MaxContextLoadTime = DefaultMaxContextLoadTime
+	}
+	if settings.Language == "" {
+		settings.Language = DefaultLanguage
+	}
+	return settings
+}
+
 func parseUUID(id string) (pgtype.UUID, error) {
 	parsed, err := uuid.Parse(id)
 	if err != nil {
@@ -116,4 +113,3 @@ func parseUUID(id string) (pgtype.UUID, error) {
 	copy(pgID.Bytes[:], parsed[:])
 	return pgID, nil
 }
-

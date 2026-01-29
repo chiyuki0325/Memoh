@@ -598,22 +598,27 @@ func (r *Resolver) loadUserSettings(ctx context.Context, userID string) (int, st
 	if err != nil {
 		return 0, "", err
 	}
-	settings, err := r.queries.GetSettingsByUserID(ctx, pgUserID)
+	settingsRow, err := r.queries.GetSettingsByUserID(ctx, pgUserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return defaultMaxContextMinutes, "Same as user input", nil
 		}
 		return 0, "", err
 	}
-	maxLoad := int(settings.MaxContextLoadTime)
+	maxLoad, language := normalizeUserSettingRow(settingsRow)
+	return maxLoad, language, nil
+}
+
+func normalizeUserSettingRow(row sqlc.UserSetting) (int, string) {
+	maxLoad := int(row.MaxContextLoadTime)
 	if maxLoad <= 0 {
 		maxLoad = defaultMaxContextMinutes
 	}
-	language := strings.TrimSpace(settings.Language)
+	language := strings.TrimSpace(row.Language)
 	if language == "" {
 		language = "Same as user input"
 	}
-	return maxLoad, language, nil
+	return maxLoad, language
 }
 
 func normalizeClientType(clientType string) (string, error) {

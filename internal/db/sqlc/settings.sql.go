@@ -11,20 +11,26 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteSettingsByUserID = `-- name: DeleteSettingsByUserID :exec
+DELETE FROM user_settings
+WHERE user_id = $1
+`
+
+func (q *Queries) DeleteSettingsByUserID(ctx context.Context, userID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteSettingsByUserID, userID)
+	return err
+}
+
 const getSettingsByUserID = `-- name: GetSettingsByUserID :one
 SELECT user_id, max_context_load_time, language
 FROM user_settings
 WHERE user_id = $1
 `
 
-func (q *Queries) GetSettingsByUserID(ctx context.Context, userID pgtype.UUID) (Settings, error) {
+func (q *Queries) GetSettingsByUserID(ctx context.Context, userID pgtype.UUID) (UserSetting, error) {
 	row := q.db.QueryRow(ctx, getSettingsByUserID, userID)
-	var i Settings
-	err := row.Scan(
-		&i.UserID,
-		&i.MaxContextLoadTime,
-		&i.Language,
-	)
+	var i UserSetting
+	err := row.Scan(&i.UserID, &i.MaxContextLoadTime, &i.Language)
 	return i, err
 }
 
@@ -43,24 +49,9 @@ type UpsertSettingsParams struct {
 	Language           string      `json:"language"`
 }
 
-func (q *Queries) UpsertSettings(ctx context.Context, arg UpsertSettingsParams) (Settings, error) {
+func (q *Queries) UpsertSettings(ctx context.Context, arg UpsertSettingsParams) (UserSetting, error) {
 	row := q.db.QueryRow(ctx, upsertSettings, arg.UserID, arg.MaxContextLoadTime, arg.Language)
-	var i Settings
-	err := row.Scan(
-		&i.UserID,
-		&i.MaxContextLoadTime,
-		&i.Language,
-	)
+	var i UserSetting
+	err := row.Scan(&i.UserID, &i.MaxContextLoadTime, &i.Language)
 	return i, err
 }
-
-const deleteSettingsByUserID = `-- name: DeleteSettingsByUserID :exec
-DELETE FROM user_settings
-WHERE user_id = $1
-`
-
-func (q *Queries) DeleteSettingsByUserID(ctx context.Context, userID pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteSettingsByUserID, userID)
-	return err
-}
-

@@ -40,12 +40,6 @@ type History struct {
 	User      pgtype.UUID        `json:"user"`
 }
 
-type Settings struct {
-	UserID             pgtype.UUID `json:"user_id"`
-	MaxContextLoadTime int32       `json:"max_context_load_time"`
-	Language           string      `json:"language"`
-}
-
 type LifecycleEvent struct {
 	ID          string             `json:"id"`
 	ContainerID string             `json:"container_id"`
@@ -110,4 +104,10 @@ type User struct {
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 	LastLoginAt  pgtype.Timestamptz `json:"last_login_at"`
+}
+
+type UserSetting struct {
+	UserID             pgtype.UUID `json:"user_id"`
+	MaxContextLoadTime int32       `json:"max_context_load_time"`
+	Language           string      `json:"language"`
 }
