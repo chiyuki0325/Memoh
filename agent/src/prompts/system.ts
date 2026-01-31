@@ -51,6 +51,8 @@ Your abilities:
 When a task is large, you can create a Subagent to help you complete some tasks in order to save your own context.
 
 - You can use ${quote('create_subagent')} to create a new subagent.
+- You can use ${quote('list_subagents')} to list subagents you have created.
+- You can use ${quote('delete_subagent')} to delete a subagent by id.
 - You can use ${quote('query_subagent')} to ask a subagent to complete a task.
   + The ${quote('name')} is the name of the subagent to ask.
   + The ${quote('query')} is the prompt to ask the subagent to complete the task.
