@@ -739,7 +739,7 @@ const docTemplate = `{
         },
         "/memory/add": {
             "post": {
-                "description": "Add memory for a user via memory",
+                "description": "Add memory for a user via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -751,7 +751,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/memory.AddRequest"
+                            "$ref": "#/definitions/handlers.memoryAddPayload"
                         }
                     }
                 ],
@@ -779,7 +779,7 @@ const docTemplate = `{
         },
         "/memory/embed": {
             "post": {
-                "description": "Embed text or multimodal input and upsert into memory store",
+                "description": "Embed text or multimodal input and upsert into memory store. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -791,7 +791,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/memory.EmbedUpsertRequest"
+                            "$ref": "#/definitions/handlers.memoryEmbedUpsertPayload"
                         }
                     }
                 ],
@@ -819,18 +819,12 @@ const docTemplate = `{
         },
         "/memory/memories": {
             "get": {
-                "description": "List memories for a user via memory",
+                "description": "List memories for a user via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
                 "summary": "List memories",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Agent ID",
@@ -872,7 +866,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete all memories for a user via memory",
+                "description": "Delete all memories for a user via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -884,7 +878,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/memory.DeleteAllRequest"
+                            "$ref": "#/definitions/handlers.memoryDeleteAllPayload"
                         }
                     }
                 ],
@@ -912,7 +906,7 @@ const docTemplate = `{
         },
         "/memory/memories/{memoryId}": {
             "get": {
-                "description": "Get a memory by ID via memory",
+                "description": "Get a memory by ID via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -948,7 +942,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a memory by ID via memory",
+                "description": "Delete a memory by ID via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -986,7 +980,7 @@ const docTemplate = `{
         },
         "/memory/search": {
             "post": {
-                "description": "Search memories for a user via memory",
+                "description": "Search memories for a user via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -998,7 +992,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/memory.SearchRequest"
+                            "$ref": "#/definitions/handlers.memorySearchPayload"
                         }
                     }
                 ],
@@ -1026,7 +1020,7 @@ const docTemplate = `{
         },
         "/memory/update": {
             "post": {
-                "description": "Update a memory by ID via memory",
+                "description": "Update a memory by ID via memory. Auth: Bearer JWT determines user_id (sub or user_id).",
                 "tags": [
                     "memory"
                 ],
@@ -1185,27 +1179,29 @@ const docTemplate = `{
                 }
             }
         },
-        "/models/enable-as/{enableAs}": {
-            "get": {
-                "description": "Get the model that is enabled for a specific purpose (chat, memory, embedding)",
+        "/models/enable": {
+            "post": {
+                "description": "Update the current user's settings to use the selected model",
                 "tags": [
                     "models"
                 ],
-                "summary": "Get model by enable_as",
+                "summary": "Enable model for chat/memory/embedding",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Enable as value (chat, memory, embedding)",
-                        "name": "enableAs",
-                        "in": "path",
-                        "required": true
+                        "description": "Enable model payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.EnableModelRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.GetResponse"
+                            "$ref": "#/definitions/settings.Settings"
                         }
                     },
                     "400": {
@@ -2850,6 +2846,17 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.EnableModelRequest": {
+            "type": "object",
+            "properties": {
+                "as": {
+                    "type": "string"
+                },
+                "model_id": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -2996,6 +3003,109 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.memoryAddPayload": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
+                    "type": "string"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "infer": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/memory.Message"
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "run_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.memoryDeleteAllPayload": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
+                    "type": "string"
+                },
+                "run_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.memoryEmbedUpsertPayload": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
+                    "type": "string"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "input": {
+                    "$ref": "#/definitions/memory.EmbedInput"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "model": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "run_id": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.memorySearchPayload": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
+                    "type": "string"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "query": {
+                    "type": "string"
+                },
+                "run_id": {
+                    "type": "string"
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "handlers.skillsOpResponse": {
             "type": "object",
             "properties": {
@@ -3060,54 +3170,6 @@ const docTemplate = `{
                 }
             }
         },
-        "memory.AddRequest": {
-            "type": "object",
-            "properties": {
-                "agent_id": {
-                    "type": "string"
-                },
-                "filters": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "infer": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "messages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/memory.Message"
-                    }
-                },
-                "metadata": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "run_id": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "memory.DeleteAllRequest": {
-            "type": "object",
-            "properties": {
-                "agent_id": {
-                    "type": "string"
-                },
-                "run_id": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "memory.DeleteResponse": {
             "type": "object",
             "properties": {
@@ -3126,43 +3188,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "video_url": {
-                    "type": "string"
-                }
-            }
-        },
-        "memory.EmbedUpsertRequest": {
-            "type": "object",
-            "properties": {
-                "agent_id": {
-                    "type": "string"
-                },
-                "filters": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "input": {
-                    "$ref": "#/definitions/memory.EmbedInput"
-                },
-                "metadata": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "model": {
-                    "type": "string"
-                },
-                "provider": {
-                    "type": "string"
-                },
-                "run_id": {
-                    "type": "string"
-                },
-                "source": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "user_id": {
                     "type": "string"
                 }
             }
@@ -3231,36 +3256,6 @@ const docTemplate = `{
                 }
             }
         },
-        "memory.SearchRequest": {
-            "type": "object",
-            "properties": {
-                "agent_id": {
-                    "type": "string"
-                },
-                "filters": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "query": {
-                    "type": "string"
-                },
-                "run_id": {
-                    "type": "string"
-                },
-                "sources": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "memory.SearchResponse": {
             "type": "object",
             "properties": {
@@ -3292,9 +3287,6 @@ const docTemplate = `{
             "properties": {
                 "dimensions": {
                     "type": "integer"
-                },
-                "enable_as": {
-                    "$ref": "#/definitions/models.EnableAs"
                 },
                 "is_multimodal": {
                     "type": "boolean"
@@ -3332,27 +3324,11 @@ const docTemplate = `{
                 }
             }
         },
-        "models.EnableAs": {
-            "type": "string",
-            "enum": [
-                "chat",
-                "memory",
-                "embedding"
-            ],
-            "x-enum-varnames": [
-                "EnableAsChat",
-                "EnableAsMemory",
-                "EnableAsEmbedding"
-            ]
-        },
         "models.GetResponse": {
             "type": "object",
             "properties": {
                 "dimensions": {
                     "type": "integer"
-                },
-                "enable_as": {
-                    "$ref": "#/definitions/models.EnableAs"
                 },
                 "is_multimodal": {
                     "type": "boolean"
@@ -3387,9 +3363,6 @@ const docTemplate = `{
             "properties": {
                 "dimensions": {
                     "type": "integer"
-                },
-                "enable_as": {
-                    "$ref": "#/definitions/models.EnableAs"
                 },
                 "is_multimodal": {
                     "type": "boolean"
@@ -3609,22 +3582,40 @@ const docTemplate = `{
         "settings.Settings": {
             "type": "object",
             "properties": {
+                "chat_model_id": {
+                    "type": "string"
+                },
+                "embedding_model_id": {
+                    "type": "string"
+                },
                 "language": {
                     "type": "string"
                 },
                 "max_context_load_time": {
                     "type": "integer"
+                },
+                "memory_model_id": {
+                    "type": "string"
                 }
             }
         },
         "settings.UpsertRequest": {
             "type": "object",
             "properties": {
+                "chat_model_id": {
+                    "type": "string"
+                },
+                "embedding_model_id": {
+                    "type": "string"
+                },
                 "language": {
                     "type": "string"
                 },
                 "max_context_load_time": {
                     "type": "integer"
+                },
+                "memory_model_id": {
+                    "type": "string"
                 }
             }
         },

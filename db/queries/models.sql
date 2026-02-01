@@ -46,15 +46,14 @@ SELECT COUNT(*) FROM llm_providers;
 SELECT COUNT(*) FROM llm_providers WHERE client_type = sqlc.arg(client_type);
 
 -- name: CreateModel :one
-INSERT INTO models (model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as)
+INSERT INTO models (model_id, name, llm_provider_id, dimensions, is_multimodal, type)
 VALUES (
   sqlc.arg(model_id),
   sqlc.arg(name),
   sqlc.arg(llm_provider_id),
   sqlc.arg(dimensions),
   sqlc.arg(is_multimodal),
-  sqlc.arg(type),
-  sqlc.arg(enable_as)
+  sqlc.arg(type)
 )
 RETURNING *;
 
@@ -87,7 +86,6 @@ SET
   dimensions = sqlc.arg(dimensions),
   is_multimodal = sqlc.arg(is_multimodal),
   type = sqlc.arg(type),
-  enable_as = sqlc.arg(enable_as),
   updated_at = now()
 WHERE id = sqlc.arg(id)
 RETURNING *;
@@ -100,7 +98,6 @@ SET
   dimensions = sqlc.arg(dimensions),
   is_multimodal = sqlc.arg(is_multimodal),
   type = sqlc.arg(type),
-  enable_as = sqlc.arg(enable_as),
   updated_at = now()
 WHERE model_id = sqlc.arg(model_id)
 RETURNING *;
@@ -117,13 +114,6 @@ SELECT COUNT(*) FROM models;
 -- name: CountModelsByType :one
 SELECT COUNT(*) FROM models WHERE type = sqlc.arg(type);
 
--- name: GetModelByEnableAs :one
-SELECT * FROM models WHERE enable_as = sqlc.arg(enable_as) LIMIT 1;
-
--- name: ClearEnableAs :exec
-UPDATE models
-SET enable_as = NULL, updated_at = now()
-WHERE enable_as = sqlc.arg(enable_as);
 
 -- name: CreateModelVariant :one
 INSERT INTO model_variants (model_uuid, variant_id, weight, metadata)

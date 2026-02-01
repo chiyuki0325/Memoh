@@ -79,14 +79,9 @@ CREATE TABLE IF NOT EXISTS models (
   dimensions INTEGER,
   is_multimodal BOOLEAN NOT NULL DEFAULT false,
   type TEXT NOT NULL DEFAULT 'chat',
-  enable_as TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT models_model_id_unique UNIQUE (model_id),
-  CONSTRAINT models_enable_as_check CHECK (
-    (type = 'embedding' AND (enable_as = 'embedding' OR enable_as IS NULL)) OR
-    (type = 'chat' AND (enable_as IN ('chat', 'memory') OR enable_as IS NULL))
-  ),
   CONSTRAINT models_type_check CHECK (type IN ('chat', 'embedding')),
   CONSTRAINT models_dimensions_check CHECK (type != 'embedding' OR dimensions IS NOT NULL)
 );
@@ -103,8 +98,6 @@ CREATE TABLE IF NOT EXISTS model_variants (
 
 CREATE INDEX IF NOT EXISTS idx_model_variants_model_uuid ON model_variants(model_uuid);
 CREATE INDEX IF NOT EXISTS idx_model_variants_variant_id ON model_variants(variant_id);
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_models_enable_as_unique ON models(enable_as) WHERE enable_as IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_container_id ON snapshots(container_id);
 CREATE INDEX IF NOT EXISTS idx_snapshots_parent_id ON snapshots(parent_snapshot_id);
@@ -144,6 +137,9 @@ CREATE INDEX IF NOT EXISTS idx_history_timestamp ON history(timestamp);
 
 CREATE TABLE IF NOT EXISTS user_settings (
   user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  chat_model_id TEXT,
+  memory_model_id TEXT,
+  embedding_model_id TEXT,
   max_context_load_time INTEGER NOT NULL DEFAULT 1440,
   language TEXT NOT NULL DEFAULT 'Same as user input'
 );

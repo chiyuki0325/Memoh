@@ -34,7 +34,6 @@ type Model = {
   is_multimodal: boolean
   type: 'chat' | 'embedding'
   dimensions?: number
-  enable_as?: 'chat' | 'memory' | 'embedding'
 }
 
 type ModelResponse = Partial<Model> & {
@@ -61,6 +60,9 @@ type ScheduleListResponse = {
 }
 
 type Settings = {
+  chat_model_id: string
+  memory_model_id: string
+  embedding_model_id: string
   max_context_load_time: number
   language: string
 }
@@ -105,7 +107,6 @@ const getModelId = (item: ModelResponse) => item.model?.model_id ?? item.model_i
 const getProviderId = (item: ModelResponse) => item.model?.llm_provider_id ?? item.llm_provider_id ?? ''
 const getModelType = (item: ModelResponse) => item.model?.type ?? item.type ?? 'chat'
 const getModelMultimodal = (item: ModelResponse) => item.model?.is_multimodal ?? item.is_multimodal ?? false
-const getModelEnableAs = (item: ModelResponse) => item.model?.enable_as ?? item.enable_as
 
 const renderProvidersTable = (providers: Provider[], models: ModelResponse[]) => {
   const rows: string[][] = [['Provider', 'Type', 'Base URL', 'Models']]
@@ -125,14 +126,13 @@ const renderProvidersTable = (providers: Provider[], models: ModelResponse[]) =>
 
 const renderModelsTable = (models: ModelResponse[], providers: Provider[]) => {
   const providerMap = new Map(providers.map(p => [p.id, p.name]))
-  const rows: string[][] = [['Model ID', 'Type', 'Provider', 'Multimodal', 'Enable As']]
+  const rows: string[][] = [['Model ID', 'Type', 'Provider', 'Multimodal']]
   for (const item of models) {
     rows.push([
       getModelId(item),
       getModelType(item),
       providerMap.get(getProviderId(item)) ?? getProviderId(item),
       getModelMultimodal(item) ? 'yes' : 'no',
-      getModelEnableAs(item) ?? '-',
     ])
   }
   return table(rows)
@@ -229,6 +229,9 @@ configCmd.action(async () => {
   if (!token?.access_token) return
   try {
     const settings = await apiRequest<Settings>('/settings', {}, token)
+    console.log(`chat_model_id = "${settings.chat_model_id || ''}"`)
+    console.log(`memory_model_id = "${settings.memory_model_id || ''}"`)
+    console.log(`embedding_model_id = "${settings.embedding_model_id || ''}"`)
     console.log(`max_context_load_time = ${settings.max_context_load_time}`)
     console.log(`language = "${settings.language}"`)
   } catch (err: unknown) {
@@ -241,6 +244,9 @@ configCmd
   .description('Update config')
   .option('--host <host>')
   .option('--port <port>')
+  .option('--chat_model_id <model_id>')
+  .option('--memory_model_id <model_id>')
+  .option('--embedding_model_id <model_id>')
   .option('--max_context_load_time <minutes>')
   .option('--language <language>')
   .action(async (opts) => {
@@ -257,7 +263,11 @@ configCmd
       maxContextLoadTime = parsed
     }
     let language = opts.language
-    const hasSettingsInput = opts.max_context_load_time !== undefined || opts.language !== undefined
+    const hasSettingsInput = opts.max_context_load_time !== undefined
+      || opts.language !== undefined
+      || opts.chat_model_id !== undefined
+      || opts.memory_model_id !== undefined
+      || opts.embedding_model_id !== undefined
     const hasConfigInput = Boolean(host || port)
 
     if (!hasConfigInput && !hasSettingsInput) {
@@ -282,6 +292,9 @@ configCmd
         language = String(language).trim()
       }
       const payload: Partial<Settings> = {}
+      if (opts.chat_model_id) payload.chat_model_id = String(opts.chat_model_id).trim()
+      if (opts.memory_model_id) payload.memory_model_id = String(opts.memory_model_id).trim()
+      if (opts.embedding_model_id) payload.embedding_model_id = String(opts.embedding_model_id).trim()
       if (maxContextLoadTime !== undefined) payload.max_context_load_time = maxContextLoadTime
       if (language) payload.language = language
       const token = ensureAuth()
@@ -393,7 +406,6 @@ model
   .option('--type <type>')
   .option('--dimensions <dimensions>')
   .option('--multimodal', 'Is multimodal')
-  .option('--enable_as <enable_as>')
   .action(async (opts) => {
     const token = ensureAuth()
     const providers = await apiRequest<Provider[]>('/providers', {}, token)
@@ -438,7 +450,6 @@ model
       is_multimodal: isMultimodal,
       type: modelType,
       dimensions,
-      enable_as: opts.enable_as,
     }
     const spinner = ora('Creating model...').start()
     try {
@@ -472,10 +483,9 @@ model
 
 model
   .command('enable')
-  .description('Enable model')
-  .option('--as <enable_as>')
-  .option('--model <model>')
-  .option('--provider <provider>')
+  .description('Enable model for chat/memory/embedding')
+  .option('--as <usage>')
+  .option('--model <model_id>')
   .action(async (opts) => {
     const token = ensureAuth()
     let enableAs = opts.as
@@ -488,57 +498,40 @@ model
       }])
       enableAs = answer.enable_as
     }
-    const [providers, models] = await Promise.all([
-      apiRequest<Provider[]>('/providers', {}, token),
-      apiRequest<ModelResponse[]>('/models', {}, token),
-    ])
-    let providerName = opts.provider
-    if (!providerName) {
-      const answer = await inquirer.prompt([{
-        type: 'list',
-        name: 'provider',
-        message: 'Select provider:',
-        choices: providers.map(p => p.name),
-      }])
-      providerName = answer.provider
-    }
-    const provider = providers.find(p => p.name === providerName)
-    if (!provider) {
-      console.log(chalk.red('Provider not found.'))
+    enableAs = String(enableAs).trim()
+    if (!['chat', 'memory', 'embedding'].includes(enableAs)) {
+      console.log(chalk.red('Enable as must be one of chat, memory, embedding.'))
       process.exit(1)
     }
-    let modelName = opts.model
-    if (!modelName) {
-      const providerModels = models
-        .filter(m => getProviderId(m) === provider.id)
-        .map(m => getModelId(m))
-      if (providerModels.length === 0) {
-        console.log(chalk.red('No models found for selected provider.'))
-        process.exit(1)
-      }
+    const models = await apiRequest<ModelResponse[]>('/models', {}, token)
+    const requiredType = enableAs === 'embedding' ? 'embedding' : 'chat'
+    const candidates = models.filter(m => getModelType(m) === requiredType)
+    if (candidates.length === 0) {
+      console.log(chalk.red(`No ${requiredType} models available.`))
+      process.exit(1)
+    }
+    let modelId = opts.model
+    if (!modelId) {
       const answer = await inquirer.prompt([{
         type: 'list',
         name: 'model',
         message: 'Select model:',
-        choices: providerModels,
+        choices: candidates.map(m => getModelId(m)),
       }])
-      modelName = answer.model
+      modelId = answer.model
     }
-    const current = models.find(m => getModelId(m) === modelName && getProviderId(m) === provider.id)
-      ?? await apiRequest<ModelResponse>(`/models/model/${encodeURIComponent(modelName)}`, {}, token)
-    const modelPayload = current.model
-      ? { ...current.model, model_id: current.model.model_id }
-      : { ...current, model_id: current.model_id ?? modelName }
-    const payload = {
-      ...modelPayload,
-      enable_as: enableAs,
+    const selected = candidates.find(m => getModelId(m) === modelId)
+    if (!selected) {
+      console.log(chalk.red('Selected model not found.'))
+      process.exit(1)
     }
-    const spinner = ora('Updating model...').start()
+    const payload: Partial<Settings> = {}
+    if (enableAs === 'chat') payload.chat_model_id = getModelId(selected)
+    if (enableAs === 'memory') payload.memory_model_id = getModelId(selected)
+    if (enableAs === 'embedding') payload.embedding_model_id = getModelId(selected)
+    const spinner = ora('Updating settings...').start()
     try {
-      await apiRequest(`/models/model/${encodeURIComponent(modelName)}`, {
-        method: 'PUT',
-        body: JSON.stringify(payload),
-      }, token)
+      await apiRequest('/settings', { method: 'PUT', body: JSON.stringify(payload) }, token)
       spinner.succeed('Model enabled')
     } catch (err: unknown) {
       spinner.fail(getErrorMessage(err) || 'Failed to enable model')

@@ -35,6 +35,9 @@ func (s *Service) Get(ctx context.Context, userID string) (Settings, error) {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return Settings{
+				ChatModelID:        "",
+				MemoryModelID:      "",
+				EmbeddingModelID:   "",
 				MaxContextLoadTime: DefaultMaxContextLoadTime,
 				Language:           DefaultLanguage,
 			}, nil
@@ -54,6 +57,9 @@ func (s *Service) Upsert(ctx context.Context, userID string, req UpsertRequest) 
 	}
 
 	current := Settings{
+		ChatModelID:        "",
+		MemoryModelID:      "",
+		EmbeddingModelID:   "",
 		MaxContextLoadTime: DefaultMaxContextLoadTime,
 		Language:           DefaultLanguage,
 	}
@@ -65,6 +71,15 @@ func (s *Service) Upsert(ctx context.Context, userID string, req UpsertRequest) 
 		current = normalizeUserSetting(existing)
 	}
 
+	if value := strings.TrimSpace(req.ChatModelID); value != "" {
+		current.ChatModelID = value
+	}
+	if value := strings.TrimSpace(req.MemoryModelID); value != "" {
+		current.MemoryModelID = value
+	}
+	if value := strings.TrimSpace(req.EmbeddingModelID); value != "" {
+		current.EmbeddingModelID = value
+	}
 	if req.MaxContextLoadTime != nil && *req.MaxContextLoadTime > 0 {
 		current.MaxContextLoadTime = *req.MaxContextLoadTime
 	}
@@ -74,6 +89,9 @@ func (s *Service) Upsert(ctx context.Context, userID string, req UpsertRequest) 
 
 	_, err = s.queries.UpsertSettings(ctx, sqlc.UpsertSettingsParams{
 		UserID:             pgID,
+		ChatModelID:        pgtype.Text{String: current.ChatModelID, Valid: current.ChatModelID != ""},
+		MemoryModelID:      pgtype.Text{String: current.MemoryModelID, Valid: current.MemoryModelID != ""},
+		EmbeddingModelID:   pgtype.Text{String: current.EmbeddingModelID, Valid: current.EmbeddingModelID != ""},
 		MaxContextLoadTime: int32(current.MaxContextLoadTime),
 		Language:           current.Language,
 	})
@@ -96,6 +114,9 @@ func (s *Service) Delete(ctx context.Context, userID string) error {
 
 func normalizeUserSetting(row sqlc.UserSetting) Settings {
 	settings := Settings{
+		ChatModelID:        strings.TrimSpace(row.ChatModelID.String),
+		MemoryModelID:      strings.TrimSpace(row.MemoryModelID.String),
+		EmbeddingModelID:   strings.TrimSpace(row.EmbeddingModelID.String),
 		MaxContextLoadTime: int(row.MaxContextLoadTime),
 		Language:           strings.TrimSpace(row.Language),
 	}

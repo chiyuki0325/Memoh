@@ -36,6 +36,14 @@ type Resolver struct {
 	streamingClient *http.Client
 }
 
+type userSettings struct {
+	ChatModelID        string
+	MemoryModelID      string
+	EmbeddingModelID   string
+	MaxContextLoadTime int
+	Language           string
+}
+
 func NewResolver(log *slog.Logger, modelsService *models.Service, queries *sqlc.Queries, memoryService *memory.Service, gatewayBaseURL string, timeout time.Duration) *Resolver {
 	if strings.TrimSpace(gatewayBaseURL) == "" {
 		gatewayBaseURL = "http://127.0.0.1:8081"
@@ -67,7 +75,11 @@ func (r *Resolver) Chat(ctx context.Context, req ChatRequest) (ChatResponse, err
 	}
 	skipHistory := req.MaxContextLoadTime < 0
 
-	chatModel, provider, err := r.selectChatModel(ctx, req)
+	settings, err := r.loadUserSettings(ctx, req.UserID)
+	if err != nil {
+		return ChatResponse{}, err
+	}
+	chatModel, provider, err := r.selectChatModel(ctx, req, settings)
 	if err != nil {
 		return ChatResponse{}, err
 	}
@@ -76,10 +88,8 @@ func (r *Resolver) Chat(ctx context.Context, req ChatRequest) (ChatResponse, err
 		return ChatResponse{}, err
 	}
 
-	maxContextLoadTime, language, err := r.loadUserSettings(ctx, req.UserID)
-	if err != nil {
-		return ChatResponse{}, err
-	}
+	maxContextLoadTime := settings.MaxContextLoadTime
+	language := settings.Language
 	if req.MaxContextLoadTime > 0 {
 		maxContextLoadTime = req.MaxContextLoadTime
 	}
@@ -157,7 +167,11 @@ func (r *Resolver) TriggerSchedule(ctx context.Context, userID string, schedule 
 		Locale:   "",
 		Language: "",
 	}
-	chatModel, provider, err := r.selectChatModel(ctx, req)
+	settings, err := r.loadUserSettings(ctx, userID)
+	if err != nil {
+		return err
+	}
+	chatModel, provider, err := r.selectChatModel(ctx, req, settings)
 	if err != nil {
 		return err
 	}
@@ -166,10 +180,8 @@ func (r *Resolver) TriggerSchedule(ctx context.Context, userID string, schedule 
 		return err
 	}
 
-	maxContextLoadTime, language, err := r.loadUserSettings(ctx, userID)
-	if err != nil {
-		return err
-	}
+	maxContextLoadTime := settings.MaxContextLoadTime
+	language := settings.Language
 
 	messages, err := r.loadHistoryMessages(ctx, userID, maxContextLoadTime)
 	if err != nil {
@@ -229,7 +241,12 @@ func (r *Resolver) StreamChat(ctx context.Context, req ChatRequest) (<-chan Stre
 		}
 		skipHistory := req.MaxContextLoadTime < 0
 
-		chatModel, provider, err := r.selectChatModel(ctx, req)
+		settings, err := r.loadUserSettings(ctx, req.UserID)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		chatModel, provider, err := r.selectChatModel(ctx, req, settings)
 		if err != nil {
 			errChan <- err
 			return
@@ -240,11 +257,8 @@ func (r *Resolver) StreamChat(ctx context.Context, req ChatRequest) (<-chan Stre
 			return
 		}
 
-		maxContextLoadTime, language, err := r.loadUserSettings(ctx, req.UserID)
-		if err != nil {
-			errChan <- err
-			return
-		}
+		maxContextLoadTime := settings.MaxContextLoadTime
+		language := settings.Language
 		if req.MaxContextLoadTime > 0 {
 			maxContextLoadTime = req.MaxContextLoadTime
 		}
@@ -797,7 +811,7 @@ func isEmptyValue(value interface{}) bool {
 	}
 }
 
-func (r *Resolver) selectChatModel(ctx context.Context, req ChatRequest) (models.GetResponse, sqlc.LlmProvider, error) {
+func (r *Resolver) selectChatModel(ctx context.Context, req ChatRequest, settings userSettings) (models.GetResponse, sqlc.LlmProvider, error) {
 	if r.modelsService == nil {
 		return models.GetResponse{}, sqlc.LlmProvider{}, fmt.Errorf("models service not configured")
 	}
@@ -819,15 +833,19 @@ func (r *Resolver) selectChatModel(ctx context.Context, req ChatRequest) (models
 		return model, provider, nil
 	}
 
-	if providerFilter == "" && modelID == "" {
-		defaultModel, err := r.modelsService.GetByEnableAs(ctx, models.EnableAsChat)
-		if err == nil {
-			provider, err := models.FetchProviderByID(ctx, r.queries, defaultModel.LlmProviderID)
-			if err != nil {
-				return models.GetResponse{}, sqlc.LlmProvider{}, err
-			}
-			return defaultModel, provider, nil
+	if providerFilter == "" && modelID == "" && strings.TrimSpace(settings.ChatModelID) != "" {
+		selected, err := r.modelsService.GetByModelID(ctx, settings.ChatModelID)
+		if err != nil {
+			return models.GetResponse{}, sqlc.LlmProvider{}, fmt.Errorf("settings chat model not found: %w", err)
 		}
+		if selected.Type != models.ModelTypeChat {
+			return models.GetResponse{}, sqlc.LlmProvider{}, fmt.Errorf("settings chat model is not a chat model")
+		}
+		provider, err := models.FetchProviderByID(ctx, r.queries, selected.LlmProviderID)
+		if err != nil {
+			return models.GetResponse{}, sqlc.LlmProvider{}, err
+		}
+		return selected, provider, nil
 	}
 
 	var candidates []models.GetResponse
@@ -880,26 +898,31 @@ func normalizeMaxContextLoad(value int) int {
 	return value
 }
 
-func (r *Resolver) loadUserSettings(ctx context.Context, userID string) (int, string, error) {
+func (r *Resolver) loadUserSettings(ctx context.Context, userID string) (userSettings, error) {
 	if r.queries == nil {
-		return defaultMaxContextMinutes, "Same as user input", nil
+		return userSettings{
+			MaxContextLoadTime: defaultMaxContextMinutes,
+			Language:           "Same as user input",
+		}, nil
 	}
 	pgUserID, err := parseUUID(userID)
 	if err != nil {
-		return 0, "", err
+		return userSettings{}, err
 	}
 	settingsRow, err := r.queries.GetSettingsByUserID(ctx, pgUserID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return defaultMaxContextMinutes, "Same as user input", nil
+			return userSettings{
+				MaxContextLoadTime: defaultMaxContextMinutes,
+				Language:           "Same as user input",
+			}, nil
 		}
-		return 0, "", err
+		return userSettings{}, err
 	}
-	maxLoad, language := normalizeUserSettingRow(settingsRow)
-	return maxLoad, language, nil
+	return normalizeUserSettingRow(settingsRow), nil
 }
 
-func normalizeUserSettingRow(row sqlc.UserSetting) (int, string) {
+func normalizeUserSettingRow(row sqlc.UserSetting) userSettings {
 	maxLoad := int(row.MaxContextLoadTime)
 	if maxLoad <= 0 {
 		maxLoad = defaultMaxContextMinutes
@@ -908,7 +931,13 @@ func normalizeUserSettingRow(row sqlc.UserSetting) (int, string) {
 	if language == "" {
 		language = "Same as user input"
 	}
-	return maxLoad, language
+	return userSettings{
+		ChatModelID:        strings.TrimSpace(row.ChatModelID.String),
+		MemoryModelID:      strings.TrimSpace(row.MemoryModelID.String),
+		EmbeddingModelID:   strings.TrimSpace(row.EmbeddingModelID.String),
+		MaxContextLoadTime: maxLoad,
+		Language:           language,
+	}
 }
 
 func normalizeClientType(clientType string) (string, error) {

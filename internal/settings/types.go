@@ -6,12 +6,17 @@ const (
 )
 
 type Settings struct {
+	ChatModelID        string `json:"chat_model_id"`
+	MemoryModelID      string `json:"memory_model_id"`
+	EmbeddingModelID   string `json:"embedding_model_id"`
 	MaxContextLoadTime int    `json:"max_context_load_time"`
 	Language           string `json:"language"`
 }
 
 type UpsertRequest struct {
+	ChatModelID        string `json:"chat_model_id,omitempty"`
+	MemoryModelID      string `json:"memory_model_id,omitempty"`
+	EmbeddingModelID   string `json:"embedding_model_id,omitempty"`
 	MaxContextLoadTime *int   `json:"max_context_load_time,omitempty"`
 	Language           string `json:"language,omitempty"`
 }
-

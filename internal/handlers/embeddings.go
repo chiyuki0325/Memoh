@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/memohai/memoh/internal/auth"
 	"github.com/memohai/memoh/internal/db/sqlc"
 	"github.com/memohai/memoh/internal/embeddings"
 	"github.com/memohai/memoh/internal/models"
@@ -84,6 +85,12 @@ func (h *EmbeddingsHandler) Embed(c echo.Context) error {
 	req.Input.ImageURL = strings.TrimSpace(req.Input.ImageURL)
 	req.Input.VideoURL = strings.TrimSpace(req.Input.VideoURL)
 
+	userID := ""
+	if c.Get("user") != nil {
+		if value, err := auth.UserIDFromContext(c); err == nil {
+			userID = value
+		}
+	}
 	result, err := h.resolver.Embed(c.Request().Context(), embeddings.Request{
 		Type:       req.Type,
 		Provider:   req.Provider,
@@ -94,6 +101,7 @@ func (h *EmbeddingsHandler) Embed(c echo.Context) error {
 			ImageURL: req.Input.ImageURL,
 			VideoURL: req.Input.VideoURL,
 		},
+		UserID: userID,
 	})
 	if err != nil {
 		message := err.Error()

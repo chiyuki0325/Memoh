@@ -3,11 +3,13 @@ package embeddings
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/memohai/memoh/internal/db/sqlc"
@@ -29,6 +31,7 @@ type Request struct {
 	Model      string
 	Dimensions int
 	Input      Input
+	UserID     string
 }
 
 type Input struct {
@@ -176,21 +179,28 @@ func (r *Resolver) selectEmbeddingModel(ctx context.Context, req Request) (model
 		return models.GetResponse{}, errors.New("models service not configured")
 	}
 
-	// If no model specified and no provider specified, try to get default embedding model
-	if req.Model == "" && req.Provider == "" {
-		defaultModel, err := r.modelsService.GetByEnableAs(ctx, models.EnableAsEmbedding)
-		if err == nil {
-			// Found default model, check if it matches the type requirement
-			if req.Type == TypeMultimodal && !defaultModel.IsMultimodal {
-				// Default is text, but need multimodal - continue to search
-			} else if req.Type == TypeText && defaultModel.IsMultimodal {
-				// Default is multimodal, but need text - continue to search
-			} else {
-				// Default model matches requirements
-				return defaultModel, nil
-			}
+	// If no model specified and no provider specified, try to get per-user embedding model.
+	if req.Model == "" && req.Provider == "" && strings.TrimSpace(req.UserID) != "" {
+		modelID, err := r.loadUserEmbeddingModelID(ctx, req.UserID)
+		if err != nil {
+			return models.GetResponse{}, err
 		}
-		// No default model or doesn't match requirements, continue to search
+		if modelID != "" {
+			selected, err := r.modelsService.GetByModelID(ctx, modelID)
+			if err != nil {
+				return models.GetResponse{}, fmt.Errorf("settings embedding model not found: %w", err)
+			}
+			if selected.Type != models.ModelTypeEmbedding {
+				return models.GetResponse{}, errors.New("settings embedding model is not an embedding model")
+			}
+			if req.Type == TypeMultimodal && !selected.IsMultimodal {
+				return models.GetResponse{}, errors.New("settings embedding model does not support multimodal")
+			}
+			if req.Type == TypeText && selected.IsMultimodal {
+				return models.GetResponse{}, errors.New("settings embedding model does not support text embeddings")
+			}
+			return selected, nil
+		}
 	}
 
 	var candidates []models.GetResponse
@@ -245,4 +255,33 @@ func (r *Resolver) fetchProvider(ctx context.Context, providerID string) (sqlc.L
 	pgID := pgtype.UUID{Valid: true}
 	copy(pgID.Bytes[:], parsed[:])
 	return r.queries.GetLlmProviderByID(ctx, pgID)
+}
+
+func (r *Resolver) loadUserEmbeddingModelID(ctx context.Context, userID string) (string, error) {
+	if r.queries == nil {
+		return "", nil
+	}
+	pgUserID, err := parseUUID(userID)
+	if err != nil {
+		return "", err
+	}
+	row, err := r.queries.GetSettingsByUserID(ctx, pgUserID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return strings.TrimSpace(row.EmbeddingModelID.String), nil
+}
+
+func parseUUID(id string) (pgtype.UUID, error) {
+	parsed, err := uuid.Parse(id)
+	if err != nil {
+		return pgtype.UUID{}, fmt.Errorf("invalid UUID: %w", err)
+	}
+	var pgID pgtype.UUID
+	pgID.Valid = true
+	copy(pgID.Bytes[:], parsed[:])
+	return pgID, nil
 }

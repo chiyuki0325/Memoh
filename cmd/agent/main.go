@@ -11,20 +11,20 @@ import (
 	"github.com/memohai/memoh/internal/chat"
 	"github.com/memohai/memoh/internal/channel"
 	"github.com/memohai/memoh/internal/config"
-	"github.com/memohai/memoh/internal/logger"
 	ctr "github.com/memohai/memoh/internal/containerd"
 	"github.com/memohai/memoh/internal/db"
 	dbsqlc "github.com/memohai/memoh/internal/db/sqlc"
 	"github.com/memohai/memoh/internal/embeddings"
 	"github.com/memohai/memoh/internal/handlers"
 	"github.com/memohai/memoh/internal/history"
+	"github.com/memohai/memoh/internal/logger"
 	"github.com/memohai/memoh/internal/mcp"
 	"github.com/memohai/memoh/internal/memory"
 	"github.com/memohai/memoh/internal/models"
 	"github.com/memohai/memoh/internal/providers"
 	"github.com/memohai/memoh/internal/schedule"
-	"github.com/memohai/memoh/internal/settings"
 	"github.com/memohai/memoh/internal/server"
+	"github.com/memohai/memoh/internal/settings"
 	"github.com/memohai/memoh/internal/subagent"
 	"github.com/memohai/memoh/internal/version"
 
@@ -177,9 +177,9 @@ func main() {
 	// Initialize providers and models handlers
 	providersService := providers.NewService(logger.L, queries)
 	providersHandler := handlers.NewProvidersHandler(logger.L, providersService)
-	modelsHandler := handlers.NewModelsHandler(logger.L, modelsService)
 	settingsService := settings.NewService(logger.L, queries)
 	settingsHandler := handlers.NewSettingsHandler(logger.L, settingsService)
+	modelsHandler := handlers.NewModelsHandler(logger.L, modelsService, settingsService)
 	historyService := history.NewService(logger.L, queries)
 	historyHandler := handlers.NewHistoryHandler(logger.L, historyService)
 	channelService := channel.NewService(queries)

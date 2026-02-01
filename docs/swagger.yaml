@@ -166,6 +166,13 @@ definitions:
       video_tokens:
         type: integer
     type: object
+  handlers.EnableModelRequest:
+    properties:
+      as:
+        type: string
+      model_id:
+        type: string
+    type: object
   handlers.ErrorResponse:
     properties:
       message:
@@ -260,6 +267,75 @@ definitions:
       updated_at:
         type: string
     type: object
+  handlers.memoryAddPayload:
+    properties:
+      agent_id:
+        type: string
+      filters:
+        additionalProperties: true
+        type: object
+      infer:
+        type: boolean
+      message:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/memory.Message'
+        type: array
+      metadata:
+        additionalProperties: true
+        type: object
+      run_id:
+        type: string
+    type: object
+  handlers.memoryDeleteAllPayload:
+    properties:
+      agent_id:
+        type: string
+      run_id:
+        type: string
+    type: object
+  handlers.memoryEmbedUpsertPayload:
+    properties:
+      agent_id:
+        type: string
+      filters:
+        additionalProperties: true
+        type: object
+      input:
+        $ref: '#/definitions/memory.EmbedInput'
+      metadata:
+        additionalProperties: true
+        type: object
+      model:
+        type: string
+      provider:
+        type: string
+      run_id:
+        type: string
+      source:
+        type: string
+      type:
+        type: string
+    type: object
+  handlers.memorySearchPayload:
+    properties:
+      agent_id:
+        type: string
+      filters:
+        additionalProperties: true
+        type: object
+      limit:
+        type: integer
+      query:
+        type: string
+      run_id:
+        type: string
+      sources:
+        items:
+          type: string
+        type: array
+    type: object
   handlers.skillsOpResponse:
     properties:
       ok:
@@ -302,38 +378,6 @@ definitions:
       user_id:
         type: string
     type: object
-  memory.AddRequest:
-    properties:
-      agent_id:
-        type: string
-      filters:
-        additionalProperties: true
-        type: object
-      infer:
-        type: boolean
-      message:
-        type: string
-      messages:
-        items:
-          $ref: '#/definitions/memory.Message'
-        type: array
-      metadata:
-        additionalProperties: true
-        type: object
-      run_id:
-        type: string
-      user_id:
-        type: string
-    type: object
-  memory.DeleteAllRequest:
-    properties:
-      agent_id:
-        type: string
-      run_id:
-        type: string
-      user_id:
-        type: string
-    type: object
   memory.DeleteResponse:
     properties:
       message:
@@ -346,31 +390,6 @@ definitions:
       text:
         type: string
       video_url:
-        type: string
-    type: object
-  memory.EmbedUpsertRequest:
-    properties:
-      agent_id:
-        type: string
-      filters:
-        additionalProperties: true
-        type: object
-      input:
-        $ref: '#/definitions/memory.EmbedInput'
-      metadata:
-        additionalProperties: true
-        type: object
-      model:
-        type: string
-      provider:
-        type: string
-      run_id:
-        type: string
-      source:
-        type: string
-      type:
-        type: string
-      user_id:
         type: string
     type: object
   memory.EmbedUpsertResponse:
@@ -415,26 +434,6 @@ definitions:
       role:
         type: string
     type: object
-  memory.SearchRequest:
-    properties:
-      agent_id:
-        type: string
-      filters:
-        additionalProperties: true
-        type: object
-      limit:
-        type: integer
-      query:
-        type: string
-      run_id:
-        type: string
-      sources:
-        items:
-          type: string
-        type: array
-      user_id:
-        type: string
-    type: object
   memory.SearchResponse:
     properties:
       relations:
@@ -456,8 +455,6 @@ definitions:
     properties:
       dimensions:
         type: integer
-      enable_as:
-        $ref: '#/definitions/models.EnableAs'
       is_multimodal:
         type: boolean
       llm_provider_id:
@@ -481,22 +478,10 @@ definitions:
       count:
         type: integer
     type: object
-  models.EnableAs:
-    enum:
-    - chat
-    - memory
-    - embedding
-    type: string
-    x-enum-varnames:
-    - EnableAsChat
-    - EnableAsMemory
-    - EnableAsEmbedding
   models.GetResponse:
     properties:
       dimensions:
         type: integer
-      enable_as:
-        $ref: '#/definitions/models.EnableAs'
       is_multimodal:
         type: boolean
       llm_provider_id:
@@ -520,8 +505,6 @@ definitions:
     properties:
       dimensions:
         type: integer
-      enable_as:
-        $ref: '#/definitions/models.EnableAs'
       is_multimodal:
         type: boolean
       llm_provider_id:
@@ -669,17 +652,29 @@ definitions:
     type: object
   settings.Settings:
     properties:
+      chat_model_id:
+        type: string
+      embedding_model_id:
+        type: string
       language:
         type: string
       max_context_load_time:
         type: integer
+      memory_model_id:
+        type: string
     type: object
   settings.UpsertRequest:
     properties:
+      chat_model_id:
+        type: string
+      embedding_model_id:
+        type: string
       language:
         type: string
       max_context_load_time:
         type: integer
+      memory_model_id:
+        type: string
     type: object
   subagent.AddSkillsRequest:
     properties:
@@ -1279,14 +1274,15 @@ paths:
       - containerd
   /memory/add:
     post:
-      description: Add memory for a user via memory
+      description: 'Add memory for a user via memory. Auth: Bearer JWT determines
+        user_id (sub or user_id).'
       parameters:
       - description: Add request
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/memory.AddRequest'
+          $ref: '#/definitions/handlers.memoryAddPayload'
       responses:
         "200":
           description: OK
@@ -1305,14 +1301,15 @@ paths:
       - memory
   /memory/embed:
     post:
-      description: Embed text or multimodal input and upsert into memory store
+      description: 'Embed text or multimodal input and upsert into memory store. Auth:
+        Bearer JWT determines user_id (sub or user_id).'
       parameters:
       - description: Embed upsert request
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/memory.EmbedUpsertRequest'
+          $ref: '#/definitions/handlers.memoryEmbedUpsertPayload'
       responses:
         "200":
           description: OK
@@ -1331,14 +1328,15 @@ paths:
       - memory
   /memory/memories:
     delete:
-      description: Delete all memories for a user via memory
+      description: 'Delete all memories for a user via memory. Auth: Bearer JWT determines
+        user_id (sub or user_id).'
       parameters:
       - description: Delete all request
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/memory.DeleteAllRequest'
+          $ref: '#/definitions/handlers.memoryDeleteAllPayload'
       responses:
         "200":
           description: OK
@@ -1356,12 +1354,9 @@ paths:
       tags:
       - memory
     get:
-      description: List memories for a user via memory
+      description: 'List memories for a user via memory. Auth: Bearer JWT determines
+        user_id (sub or user_id).'
       parameters:
-      - description: User ID
-        in: query
-        name: user_id
-        type: string
       - description: Agent ID
         in: query
         name: agent_id
@@ -1392,7 +1387,8 @@ paths:
       - memory
   /memory/memories/{memoryId}:
     delete:
-      description: Delete a memory by ID via memory
+      description: 'Delete a memory by ID via memory. Auth: Bearer JWT determines
+        user_id (sub or user_id).'
       parameters:
       - description: Memory ID
         in: path
@@ -1416,7 +1412,8 @@ paths:
       tags:
       - memory
     get:
-      description: Get a memory by ID via memory
+      description: 'Get a memory by ID via memory. Auth: Bearer JWT determines user_id
+        (sub or user_id).'
       parameters:
       - description: Memory ID
         in: path
@@ -1441,14 +1438,15 @@ paths:
       - memory
   /memory/search:
     post:
-      description: Search memories for a user via memory
+      description: 'Search memories for a user via memory. Auth: Bearer JWT determines
+        user_id (sub or user_id).'
       parameters:
       - description: Search request
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/memory.SearchRequest'
+          $ref: '#/definitions/handlers.memorySearchPayload'
       responses:
         "200":
           description: OK
@@ -1467,7 +1465,8 @@ paths:
       - memory
   /memory/update:
     post:
-      description: Update a memory by ID via memory
+      description: 'Update a memory by ID via memory. Auth: Bearer JWT determines
+        user_id (sub or user_id).'
       parameters:
       - description: Update request
         in: body
@@ -1660,21 +1659,21 @@ paths:
       summary: Get model count
       tags:
       - models
-  /models/enable-as/{enableAs}:
-    get:
-      description: Get the model that is enabled for a specific purpose (chat, memory,
-        embedding)
+  /models/enable:
+    post:
+      description: Update the current user's settings to use the selected model
       parameters:
-      - description: Enable as value (chat, memory, embedding)
-        in: path
-        name: enableAs
+      - description: Enable model payload
+        in: body
+        name: payload
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.EnableModelRequest'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.GetResponse'
+            $ref: '#/definitions/settings.Settings'
         "400":
           description: Bad Request
           schema:
@@ -1687,7 +1686,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.ErrorResponse'
-      summary: Get model by enable_as
+      summary: Enable model for chat/memory/embedding
       tags:
       - models
   /models/model/{modelId}:

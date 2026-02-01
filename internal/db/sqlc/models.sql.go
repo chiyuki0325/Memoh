@@ -11,17 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const clearEnableAs = `-- name: ClearEnableAs :exec
-UPDATE models
-SET enable_as = NULL, updated_at = now()
-WHERE enable_as = $1
-`
-
-func (q *Queries) ClearEnableAs(ctx context.Context, enableAs pgtype.Text) error {
-	_, err := q.db.Exec(ctx, clearEnableAs, enableAs)
-	return err
-}
-
 const countLlmProviders = `-- name: CountLlmProviders :one
 SELECT COUNT(*) FROM llm_providers
 `
@@ -109,17 +98,16 @@ func (q *Queries) CreateLlmProvider(ctx context.Context, arg CreateLlmProviderPa
 }
 
 const createModel = `-- name: CreateModel :one
-INSERT INTO models (model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as)
+INSERT INTO models (model_id, name, llm_provider_id, dimensions, is_multimodal, type)
 VALUES (
   $1,
   $2,
   $3,
   $4,
   $5,
-  $6,
-  $7
+  $6
 )
-RETURNING id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at
+RETURNING id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at
 `
 
 type CreateModelParams struct {
@@ -129,7 +117,6 @@ type CreateModelParams struct {
 	Dimensions    pgtype.Int4 `json:"dimensions"`
 	IsMultimodal  bool        `json:"is_multimodal"`
 	Type          string      `json:"type"`
-	EnableAs      pgtype.Text `json:"enable_as"`
 }
 
 func (q *Queries) CreateModel(ctx context.Context, arg CreateModelParams) (Model, error) {
@@ -140,7 +127,6 @@ func (q *Queries) CreateModel(ctx context.Context, arg CreateModelParams) (Model
 		arg.Dimensions,
 		arg.IsMultimodal,
 		arg.Type,
-		arg.EnableAs,
 	)
 	var i Model
 	err := row.Scan(
@@ -151,7 +137,6 @@ func (q *Queries) CreateModel(ctx context.Context, arg CreateModelParams) (Model
 		&i.Dimensions,
 		&i.IsMultimodal,
 		&i.Type,
-		&i.EnableAs,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -272,30 +257,8 @@ func (q *Queries) GetLlmProviderByName(ctx context.Context, name string) (LlmPro
 	return i, err
 }
 
-const getModelByEnableAs = `-- name: GetModelByEnableAs :one
-SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at FROM models WHERE enable_as = $1 LIMIT 1
-`
-
-func (q *Queries) GetModelByEnableAs(ctx context.Context, enableAs pgtype.Text) (Model, error) {
-	row := q.db.QueryRow(ctx, getModelByEnableAs, enableAs)
-	var i Model
-	err := row.Scan(
-		&i.ID,
-		&i.ModelID,
-		&i.Name,
-		&i.LlmProviderID,
-		&i.Dimensions,
-		&i.IsMultimodal,
-		&i.Type,
-		&i.EnableAs,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const getModelByID = `-- name: GetModelByID :one
-SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at FROM models WHERE id = $1
+SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at FROM models WHERE id = $1
 `
 
 func (q *Queries) GetModelByID(ctx context.Context, id pgtype.UUID) (Model, error) {
@@ -309,7 +272,6 @@ func (q *Queries) GetModelByID(ctx context.Context, id pgtype.UUID) (Model, erro
 		&i.Dimensions,
 		&i.IsMultimodal,
 		&i.Type,
-		&i.EnableAs,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -317,7 +279,7 @@ func (q *Queries) GetModelByID(ctx context.Context, id pgtype.UUID) (Model, erro
 }
 
 const getModelByModelID = `-- name: GetModelByModelID :one
-SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at FROM models WHERE model_id = $1
+SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at FROM models WHERE model_id = $1
 `
 
 func (q *Queries) GetModelByModelID(ctx context.Context, modelID string) (Model, error) {
@@ -331,7 +293,6 @@ func (q *Queries) GetModelByModelID(ctx context.Context, modelID string) (Model,
 		&i.Dimensions,
 		&i.IsMultimodal,
 		&i.Type,
-		&i.EnableAs,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -495,7 +456,7 @@ func (q *Queries) ListModelVariantsByVariantID(ctx context.Context, variantID st
 }
 
 const listModels = `-- name: ListModels :many
-SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at FROM models
+SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at FROM models
 ORDER BY created_at DESC
 `
 
@@ -516,7 +477,6 @@ func (q *Queries) ListModels(ctx context.Context) ([]Model, error) {
 			&i.Dimensions,
 			&i.IsMultimodal,
 			&i.Type,
-			&i.EnableAs,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -531,7 +491,7 @@ func (q *Queries) ListModels(ctx context.Context) ([]Model, error) {
 }
 
 const listModelsByClientType = `-- name: ListModelsByClientType :many
-SELECT m.id, m.model_id, m.name, m.llm_provider_id, m.dimensions, m.is_multimodal, m.type, m.enable_as, m.created_at, m.updated_at FROM models AS m
+SELECT m.id, m.model_id, m.name, m.llm_provider_id, m.dimensions, m.is_multimodal, m.type, m.created_at, m.updated_at FROM models AS m
 JOIN llm_providers AS p ON p.id = m.llm_provider_id
 WHERE p.client_type = $1
 ORDER BY m.created_at DESC
@@ -554,7 +514,6 @@ func (q *Queries) ListModelsByClientType(ctx context.Context, clientType string)
 			&i.Dimensions,
 			&i.IsMultimodal,
 			&i.Type,
-			&i.EnableAs,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -569,7 +528,7 @@ func (q *Queries) ListModelsByClientType(ctx context.Context, clientType string)
 }
 
 const listModelsByType = `-- name: ListModelsByType :many
-SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at FROM models
+SELECT id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at FROM models
 WHERE type = $1
 ORDER BY created_at DESC
 `
@@ -591,7 +550,6 @@ func (q *Queries) ListModelsByType(ctx context.Context, type_ string) ([]Model, 
 			&i.Dimensions,
 			&i.IsMultimodal,
 			&i.Type,
-			&i.EnableAs,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -658,10 +616,9 @@ SET
   dimensions = $3,
   is_multimodal = $4,
   type = $5,
-  enable_as = $6,
   updated_at = now()
-WHERE id = $7
-RETURNING id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at
+WHERE id = $6
+RETURNING id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at
 `
 
 type UpdateModelParams struct {
@@ -670,7 +627,6 @@ type UpdateModelParams struct {
 	Dimensions    pgtype.Int4 `json:"dimensions"`
 	IsMultimodal  bool        `json:"is_multimodal"`
 	Type          string      `json:"type"`
-	EnableAs      pgtype.Text `json:"enable_as"`
 	ID            pgtype.UUID `json:"id"`
 }
 
@@ -681,7 +637,6 @@ func (q *Queries) UpdateModel(ctx context.Context, arg UpdateModelParams) (Model
 		arg.Dimensions,
 		arg.IsMultimodal,
 		arg.Type,
-		arg.EnableAs,
 		arg.ID,
 	)
 	var i Model
@@ -693,7 +648,6 @@ func (q *Queries) UpdateModel(ctx context.Context, arg UpdateModelParams) (Model
 		&i.Dimensions,
 		&i.IsMultimodal,
 		&i.Type,
-		&i.EnableAs,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -708,10 +662,9 @@ SET
   dimensions = $3,
   is_multimodal = $4,
   type = $5,
-  enable_as = $6,
   updated_at = now()
-WHERE model_id = $7
-RETURNING id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, enable_as, created_at, updated_at
+WHERE model_id = $6
+RETURNING id, model_id, name, llm_provider_id, dimensions, is_multimodal, type, created_at, updated_at
 `
 
 type UpdateModelByModelIDParams struct {
@@ -720,7 +673,6 @@ type UpdateModelByModelIDParams struct {
 	Dimensions    pgtype.Int4 `json:"dimensions"`
 	IsMultimodal  bool        `json:"is_multimodal"`
 	Type          string      `json:"type"`
-	EnableAs      pgtype.Text `json:"enable_as"`
 	ModelID       string      `json:"model_id"`
 }
 
@@ -731,7 +683,6 @@ func (q *Queries) UpdateModelByModelID(ctx context.Context, arg UpdateModelByMod
 		arg.Dimensions,
 		arg.IsMultimodal,
 		arg.Type,
-		arg.EnableAs,
 		arg.ModelID,
 	)
 	var i Model
@@ -743,7 +694,6 @@ func (q *Queries) UpdateModelByModelID(ctx context.Context, arg UpdateModelByMod
 		&i.Dimensions,
 		&i.IsMultimodal,
 		&i.Type,
-		&i.EnableAs,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

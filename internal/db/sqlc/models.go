@@ -87,7 +87,6 @@ type Model struct {
 	Dimensions    pgtype.Int4        `json:"dimensions"`
 	IsMultimodal  bool               `json:"is_multimodal"`
 	Type          string             `json:"type"`
-	EnableAs      pgtype.Text        `json:"enable_as"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }
@@ -156,6 +155,9 @@ type User struct {
 
 type UserSetting struct {
 	UserID             pgtype.UUID `json:"user_id"`
+	ChatModelID        pgtype.Text `json:"chat_model_id"`
+	MemoryModelID      pgtype.Text `json:"memory_model_id"`
+	EmbeddingModelID   pgtype.Text `json:"embedding_model_id"`
 	MaxContextLoadTime int32       `json:"max_context_load_time"`
 	Language           string      `json:"language"`
 }

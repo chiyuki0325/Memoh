@@ -22,7 +22,7 @@ func (q *Queries) DeleteSettingsByUserID(ctx context.Context, userID pgtype.UUID
 }
 
 const getSettingsByUserID = `-- name: GetSettingsByUserID :one
-SELECT user_id, max_context_load_time, language
+SELECT user_id, chat_model_id, memory_model_id, embedding_model_id, max_context_load_time, language
 FROM user_settings
 WHERE user_id = $1
 `
@@ -30,28 +30,55 @@ WHERE user_id = $1
 func (q *Queries) GetSettingsByUserID(ctx context.Context, userID pgtype.UUID) (UserSetting, error) {
 	row := q.db.QueryRow(ctx, getSettingsByUserID, userID)
 	var i UserSetting
-	err := row.Scan(&i.UserID, &i.MaxContextLoadTime, &i.Language)
+	err := row.Scan(
+		&i.UserID,
+		&i.ChatModelID,
+		&i.MemoryModelID,
+		&i.EmbeddingModelID,
+		&i.MaxContextLoadTime,
+		&i.Language,
+	)
 	return i, err
 }
 
 const upsertSettings = `-- name: UpsertSettings :one
-INSERT INTO user_settings (user_id, max_context_load_time, language)
-VALUES ($1, $2, $3)
+INSERT INTO user_settings (user_id, chat_model_id, memory_model_id, embedding_model_id, max_context_load_time, language)
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT (user_id) DO UPDATE SET
+  chat_model_id = EXCLUDED.chat_model_id,
+  memory_model_id = EXCLUDED.memory_model_id,
+  embedding_model_id = EXCLUDED.embedding_model_id,
   max_context_load_time = EXCLUDED.max_context_load_time,
   language = EXCLUDED.language
-RETURNING user_id, max_context_load_time, language
+RETURNING user_id, chat_model_id, memory_model_id, embedding_model_id, max_context_load_time, language
 `
 
 type UpsertSettingsParams struct {
 	UserID             pgtype.UUID `json:"user_id"`
+	ChatModelID        pgtype.Text `json:"chat_model_id"`
+	MemoryModelID      pgtype.Text `json:"memory_model_id"`
+	EmbeddingModelID   pgtype.Text `json:"embedding_model_id"`
 	MaxContextLoadTime int32       `json:"max_context_load_time"`
 	Language           string      `json:"language"`
 }
 
 func (q *Queries) UpsertSettings(ctx context.Context, arg UpsertSettingsParams) (UserSetting, error) {
-	row := q.db.QueryRow(ctx, upsertSettings, arg.UserID, arg.MaxContextLoadTime, arg.Language)
+	row := q.db.QueryRow(ctx, upsertSettings,
+		arg.UserID,
+		arg.ChatModelID,
+		arg.MemoryModelID,
+		arg.EmbeddingModelID,
+		arg.MaxContextLoadTime,
+		arg.Language,
+	)
 	var i UserSetting
-	err := row.Scan(&i.UserID, &i.MaxContextLoadTime, &i.Language)
+	err := row.Scan(
+		&i.UserID,
+		&i.ChatModelID,
+		&i.MemoryModelID,
+		&i.EmbeddingModelID,
+		&i.MaxContextLoadTime,
+		&i.Language,
+	)
 	return i, err
 }
