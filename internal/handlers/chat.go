@@ -76,7 +76,7 @@ func (h *ChatHandler) Chat(c echo.Context) error {
 // @Accept json
 // @Produce text/event-stream
 // @Param request body chat.ChatRequest true "Chat request"
-// @Success 200 {object} chat.StreamChunk
+// @Success 200 {string} string
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /chat/stream [post]

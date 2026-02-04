@@ -107,69 +107,27 @@ func main() {
 	}
 
 	resolver := embeddings.NewResolver(logger.L, modelsService, queries, 10*time.Second)
-	vectors, textModel, multimodalModel, hasModels, err := embeddings.CollectEmbeddingVectors(ctx, modelsService)
+	vectors, textModel, multimodalModel, hasEmbeddingModels, err := embeddings.CollectEmbeddingVectors(ctx, modelsService)
 	if err != nil {
 		logger.Error("embedding models", slog.Any("error", err))
 		os.Exit(1)
 	}
 
-	var memoryService *memory.Service
-	var memoryHandler *handlers.MemoryHandler
-
-	if !hasModels {
-		logger.Warn("No embedding models configured. Memory service will not be available.")
-		logger.Warn("You can add embedding models via the /models API endpoint.")
-		memoryHandler = handlers.NewMemoryHandler(logger.L, nil)
-	} else {
-		if textModel.ModelID == "" {
-			logger.Warn("No text embedding model configured. Text embedding features will be limited.")
-		}
-		if multimodalModel.ModelID == "" {
-			logger.Warn("No multimodal embedding model configured. Multimodal embedding features will be limited.")
-		}
-
-		var textEmbedder embeddings.Embedder
-		var store *memory.QdrantStore
-
-		if textModel.ModelID != "" && textModel.Dimensions > 0 {
-			textEmbedder = &embeddings.ResolverTextEmbedder{
-				Resolver: resolver,
-				ModelID:  textModel.ModelID,
-				Dims:     textModel.Dimensions,
-			}
-
-			if len(vectors) > 0 {
-				store, err = memory.NewQdrantStoreWithVectors(
-					logger.L,
-					cfg.Qdrant.BaseURL,
-					cfg.Qdrant.APIKey,
-					cfg.Qdrant.Collection,
-					vectors,
-					time.Duration(cfg.Qdrant.TimeoutSeconds)*time.Second,
-				)
-				if err != nil {
-					logger.Error("qdrant named vectors init", slog.Any("error", err))
-					os.Exit(1)
-				}
-			} else {
-				store, err = memory.NewQdrantStore(
-					logger.L,
-					cfg.Qdrant.BaseURL,
-					cfg.Qdrant.APIKey,
-					cfg.Qdrant.Collection,
-					textModel.Dimensions,
-					time.Duration(cfg.Qdrant.TimeoutSeconds)*time.Second,
-				)
-				if err != nil {
-					logger.Error("qdrant init", slog.Any("error", err))
-					os.Exit(1)
-				}
-			}
-		}
-
-		memoryService = memory.NewService(logger.L, llmClient, textEmbedder, store, resolver, textModel.ModelID, multimodalModel.ModelID)
-		memoryHandler = handlers.NewMemoryHandler(logger.L, memoryService)
+	textEmbedder := buildTextEmbedder(resolver, textModel, hasEmbeddingModels, logger.L)
+	if hasEmbeddingModels && multimodalModel.ModelID == "" {
+		logger.Warn("No multimodal embedding model configured. Multimodal embedding features will be limited.")
 	}
+
+	store := buildQdrantStore(logger.L, cfg.Qdrant, vectors, hasEmbeddingModels, textModel.Dimensions)
+
+	bm25Indexer := memory.NewBM25Indexer(logger.L)
+	memoryService := memory.NewService(logger.L, llmClient, textEmbedder, store, resolver, bm25Indexer, textModel.ModelID, multimodalModel.ModelID)
+	memoryHandler := handlers.NewMemoryHandler(logger.L, memoryService)
+	go func() {
+		if err := memoryService.WarmupBM25(ctx, 200); err != nil {
+			logger.Warn("bm25 warmup failed", slog.Any("error", err))
+		}
+	}()
 	chatResolver = chat.NewResolver(logger.L, modelsService, queries, memoryService, cfg.AgentGateway.BaseURL(), 30*time.Second)
 	embeddingsHandler := handlers.NewEmbeddingsHandler(logger.L, modelsService, queries)
 	swaggerHandler := handlers.NewSwaggerHandler(logger.L)
@@ -197,12 +155,61 @@ func main() {
 	scheduleHandler := handlers.NewScheduleHandler(logger.L, scheduleService)
 	subagentService := subagent.NewService(logger.L, queries)
 	subagentHandler := handlers.NewSubagentHandler(logger.L, subagentService)
-	srv := server.NewServer(logger.L, addr, cfg.Auth.JWTSecret, pingHandler, authHandler, memoryHandler, embeddingsHandler, chatHandler, swaggerHandler, providersHandler, modelsHandler, settingsHandler, historyHandler, scheduleHandler, subagentHandler, containerdHandler, /*channelHandler*/)
+	srv := server.NewServer(logger.L, addr, cfg.Auth.JWTSecret, pingHandler, authHandler, memoryHandler, embeddingsHandler, chatHandler, swaggerHandler, providersHandler, modelsHandler, settingsHandler, historyHandler, scheduleHandler, subagentHandler, containerdHandler /*channelHandler*/)
 
 	if err := srv.Start(); err != nil {
 		logger.Error("server failed", slog.Any("error", err))
 		os.Exit(1)
 	}
+}
+
+func buildTextEmbedder(resolver *embeddings.Resolver, textModel models.GetResponse, hasModels bool, log *slog.Logger) embeddings.Embedder {
+	if !hasModels {
+		return nil
+	}
+	if textModel.ModelID == "" || textModel.Dimensions <= 0 {
+		log.Warn("No text embedding model configured. Text embedding features will be limited.")
+		return nil
+	}
+	return &embeddings.ResolverTextEmbedder{
+		Resolver: resolver,
+		ModelID:  textModel.ModelID,
+		Dims:     textModel.Dimensions,
+	}
+}
+
+func buildQdrantStore(log *slog.Logger, cfg config.QdrantConfig, vectors map[string]int, hasModels bool, textDims int) *memory.QdrantStore {
+	timeout := time.Duration(cfg.TimeoutSeconds) * time.Second
+	if hasModels && len(vectors) > 0 {
+		store, err := memory.NewQdrantStoreWithVectors(
+			log,
+			cfg.BaseURL,
+			cfg.APIKey,
+			cfg.Collection,
+			vectors,
+			"sparse_hash",
+			timeout,
+		)
+		if err != nil {
+			log.Error("qdrant named vectors init", slog.Any("error", err))
+			os.Exit(1)
+		}
+		return store
+	}
+	store, err := memory.NewQdrantStore(
+		log,
+		cfg.BaseURL,
+		cfg.APIKey,
+		cfg.Collection,
+		textDims,
+		"sparse_hash",
+		timeout,
+	)
+	if err != nil {
+		log.Error("qdrant init", slog.Any("error", err))
+		os.Exit(1)
+	}
+	return store
 }
 
 func ensureAdminUser(ctx context.Context, log *slog.Logger, queries *dbsqlc.Queries, cfg config.Config) error {
@@ -277,6 +284,14 @@ func (c *lazyLLMClient) Decide(ctx context.Context, req memory.DecideRequest) (m
 		return memory.DecideResponse{}, err
 	}
 	return client.Decide(ctx, req)
+}
+
+func (c *lazyLLMClient) DetectLanguage(ctx context.Context, text string) (string, error) {
+	client, err := c.resolve(ctx)
+	if err != nil {
+		return "", err
+	}
+	return client.DetectLanguage(ctx, text)
 }
 
 func (c *lazyLLMClient) resolve(ctx context.Context) (memory.LLM, error) {

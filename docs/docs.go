@@ -135,11 +135,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "format": "int32"
-                            }
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -827,12 +823,6 @@ const docTemplate = `{
                 ],
                 "summary": "List memories",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Agent ID",
-                        "name": "agent_id",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Run ID",
@@ -3061,8 +3051,8 @@ const docTemplate = `{
         "handlers.memoryAddPayload": {
             "type": "object",
             "properties": {
-                "agent_id": {
-                    "type": "string"
+                "embedding_enabled": {
+                    "type": "boolean"
                 },
                 "filters": {
                     "type": "object",
@@ -3092,9 +3082,6 @@ const docTemplate = `{
         "handlers.memoryDeleteAllPayload": {
             "type": "object",
             "properties": {
-                "agent_id": {
-                    "type": "string"
-                },
                 "run_id": {
                     "type": "string"
                 }
@@ -3103,9 +3090,6 @@ const docTemplate = `{
         "handlers.memoryEmbedUpsertPayload": {
             "type": "object",
             "properties": {
-                "agent_id": {
-                    "type": "string"
-                },
                 "filters": {
                     "type": "object",
                     "additionalProperties": true
@@ -3137,8 +3121,8 @@ const docTemplate = `{
         "handlers.memorySearchPayload": {
             "type": "object",
             "properties": {
-                "agent_id": {
-                    "type": "string"
+                "embedding_enabled": {
+                    "type": "boolean"
                 },
                 "filters": {
                     "type": "object",
@@ -3267,9 +3251,6 @@ const docTemplate = `{
         "memory.MemoryItem": {
             "type": "object",
             "properties": {
-                "agentId": {
-                    "type": "string"
-                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -3329,6 +3310,9 @@ const docTemplate = `{
         "memory.UpdateRequest": {
             "type": "object",
             "properties": {
+                "embedding_enabled": {
+                    "type": "boolean"
+                },
                 "memory": {
                     "type": "string"
                 },

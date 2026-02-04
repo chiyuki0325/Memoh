@@ -269,8 +269,8 @@ definitions:
     type: object
   handlers.memoryAddPayload:
     properties:
-      agent_id:
-        type: string
+      embedding_enabled:
+        type: boolean
       filters:
         additionalProperties: true
         type: object
@@ -290,15 +290,11 @@ definitions:
     type: object
   handlers.memoryDeleteAllPayload:
     properties:
-      agent_id:
-        type: string
       run_id:
         type: string
     type: object
   handlers.memoryEmbedUpsertPayload:
     properties:
-      agent_id:
-        type: string
       filters:
         additionalProperties: true
         type: object
@@ -320,8 +316,8 @@ definitions:
     type: object
   handlers.memorySearchPayload:
     properties:
-      agent_id:
-        type: string
+      embedding_enabled:
+        type: boolean
       filters:
         additionalProperties: true
         type: object
@@ -405,8 +401,6 @@ definitions:
     type: object
   memory.MemoryItem:
     properties:
-      agentId:
-        type: string
       createdAt:
         type: string
       hash:
@@ -446,6 +440,8 @@ definitions:
     type: object
   memory.UpdateRequest:
     properties:
+      embedding_enabled:
+        type: boolean
       memory:
         type: string
       memory_id:
@@ -872,10 +868,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              format: int32
-              type: integer
-            type: array
+            type: string
         "400":
           description: Bad Request
           schema:
@@ -1365,10 +1358,6 @@ paths:
       description: 'List memories for a user via memory. Auth: Bearer JWT determines
         user_id (sub or user_id).'
       parameters:
-      - description: Agent ID
-        in: query
-        name: agent_id
-        type: string
       - description: Run ID
         in: query
         name: run_id

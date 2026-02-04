@@ -106,6 +106,20 @@ Follow the instruction mentioned below:
 Do not return anything except the JSON format.`, toJSON(retrievedOldMemory), toJSON(newRetrievedFacts), "```json", "```")
 }
 
+func getLanguageDetectionMessages(text string) (string, string) {
+	systemPrompt := `You are a language classifier for the given input text.
+Return a JSON object with a single key "language" whose value is one of the allowed codes.
+Allowed codes: ar, bg, ca, cjk, ckb, da, de, el, en, es, eu, fa, fi, fr, ga, gl, hi, hr, hu, hy, id, in, it, nl, no, pl, pt, ro, ru, sv, tr.
+Use "cjk" for Chinese/Japanese/Korean text, ckb=Kurdish(Sorani), ga=Irish(Gaelic), gl=Galician, eu=Basque, hy=Armenian, fa=Persian, hr=Croatian, hu=Hungarian, ro=Romanian, bg=Bulgarian. If unsure between id/in, use id.
+If multiple languages appear, choose the dominant language.
+Do not include any extra keys, comments, or formatting. Output must be valid JSON only.
+If the text is Chinese, Japanese, or Korean, output exactly {"language":"cjk"}.
+Never output "zh", "zh-cn", "zh-tw", "ja", "ko", or any code not in the allowed list.
+Before finalizing, verify the value is one of the allowed codes.`
+	userPrompt := fmt.Sprintf("Text:\n%s", text)
+	return systemPrompt, userPrompt
+}
+
 func parseMessages(messages []string) string {
 	return strings.Join(messages, "\n")
 }

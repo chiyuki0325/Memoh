@@ -29,7 +29,7 @@ func NewLLMClient(log *slog.Logger, baseURL, apiKey, model string, timeout time.
 	}
 	baseURL = strings.TrimRight(baseURL, "/")
 	if model == "" {
-		model = "gpt-4.1-nano-2025-04-14"
+		model = "gpt-4.1-nano"
 	}
 	if timeout <= 0 {
 		timeout = 10 * time.Second
@@ -117,6 +117,31 @@ func (c *LLMClient) Decide(ctx context.Context, req DecideRequest) (DecideRespon
 		})
 	}
 	return DecideResponse{Actions: actions}, nil
+}
+
+func (c *LLMClient) DetectLanguage(ctx context.Context, text string) (string, error) {
+	if strings.TrimSpace(text) == "" {
+		return "", fmt.Errorf("text is required")
+	}
+	systemPrompt, userPrompt := getLanguageDetectionMessages(text)
+	content, err := c.callChat(ctx, []chatMessage{
+		{Role: "system", Content: systemPrompt},
+		{Role: "user", Content: userPrompt},
+	})
+	if err != nil {
+		return "", err
+	}
+	var parsed struct {
+		Language string `json:"language"`
+	}
+	if err := json.Unmarshal([]byte(removeCodeBlocks(content)), &parsed); err != nil {
+		return "", err
+	}
+	lang := strings.ToLower(strings.TrimSpace(parsed.Language))
+	if !isAllowedLanguageCode(lang) {
+		return "", fmt.Errorf("unsupported language code: %s", lang)
+	}
+	return lang, nil
 }
 
 type chatMessage struct {
@@ -245,5 +270,16 @@ func normalizeMemoryItems(value interface{}) []map[string]interface{} {
 		return items
 	default:
 		return nil
+	}
+}
+
+func isAllowedLanguageCode(code string) bool {
+	switch strings.ToLower(strings.TrimSpace(code)) {
+	case "ar", "bg", "ca", "cjk", "ckb", "da", "de", "el", "en", "es", "eu",
+		"fa", "fi", "fr", "ga", "gl", "hi", "hr", "hu", "hy", "id", "in",
+		"it", "nl", "no", "pl", "pt", "ro", "ru", "sv", "tr":
+		return true
+	default:
+		return false
 	}
 }

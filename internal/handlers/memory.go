@@ -18,22 +18,22 @@ type MemoryHandler struct {
 }
 
 type memoryAddPayload struct {
-	Message  string                 `json:"message,omitempty"`
-	Messages []memory.Message       `json:"messages,omitempty"`
-	AgentID  string                 `json:"agent_id,omitempty"`
-	RunID    string                 `json:"run_id,omitempty"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-	Filters  map[string]interface{} `json:"filters,omitempty"`
-	Infer    *bool                  `json:"infer,omitempty"`
+	Message          string                 `json:"message,omitempty"`
+	Messages         []memory.Message       `json:"messages,omitempty"`
+	RunID            string                 `json:"run_id,omitempty"`
+	Metadata         map[string]interface{} `json:"metadata,omitempty"`
+	Filters          map[string]interface{} `json:"filters,omitempty"`
+	Infer            *bool                  `json:"infer,omitempty"`
+	EmbeddingEnabled *bool                  `json:"embedding_enabled,omitempty"`
 }
 
 type memorySearchPayload struct {
-	Query   string                 `json:"query"`
-	AgentID string                 `json:"agent_id,omitempty"`
-	RunID   string                 `json:"run_id,omitempty"`
-	Limit   int                    `json:"limit,omitempty"`
-	Filters map[string]interface{} `json:"filters,omitempty"`
-	Sources []string               `json:"sources,omitempty"`
+	Query            string                 `json:"query"`
+	RunID            string                 `json:"run_id,omitempty"`
+	Limit            int                    `json:"limit,omitempty"`
+	Filters          map[string]interface{} `json:"filters,omitempty"`
+	Sources          []string               `json:"sources,omitempty"`
+	EmbeddingEnabled *bool                  `json:"embedding_enabled,omitempty"`
 }
 
 type memoryEmbedUpsertPayload struct {
@@ -42,15 +42,13 @@ type memoryEmbedUpsertPayload struct {
 	Model    string                 `json:"model,omitempty"`
 	Input    memory.EmbedInput      `json:"input"`
 	Source   string                 `json:"source,omitempty"`
-	AgentID  string                 `json:"agent_id,omitempty"`
 	RunID    string                 `json:"run_id,omitempty"`
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	Filters  map[string]interface{} `json:"filters,omitempty"`
 }
 
 type memoryDeleteAllPayload struct {
-	AgentID string `json:"agent_id,omitempty"`
-	RunID   string `json:"run_id,omitempty"`
+	RunID string `json:"run_id,omitempty"`
 }
 
 func NewMemoryHandler(log *slog.Logger, service *memory.Service) *MemoryHandler {
@@ -74,7 +72,7 @@ func (h *MemoryHandler) Register(e *echo.Echo) {
 
 func (h *MemoryHandler) checkService() error {
 	if h.service == nil {
-		return echo.NewHTTPError(http.StatusServiceUnavailable, "memory service not available: no embedding models configured")
+		return echo.NewHTTPError(http.StatusServiceUnavailable, "memory service not available")
 	}
 	return nil
 }
@@ -109,7 +107,6 @@ func (h *MemoryHandler) EmbedUpsert(c echo.Context) error {
 		Input:    payload.Input,
 		Source:   payload.Source,
 		UserID:   userID,
-		AgentID:  payload.AgentID,
 		RunID:    payload.RunID,
 		Metadata: payload.Metadata,
 		Filters:  payload.Filters,
@@ -146,14 +143,14 @@ func (h *MemoryHandler) Add(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	req := memory.AddRequest{
-		Message:  payload.Message,
-		Messages: payload.Messages,
-		UserID:   userID,
-		AgentID:  payload.AgentID,
-		RunID:    payload.RunID,
-		Metadata: payload.Metadata,
-		Filters:  payload.Filters,
-		Infer:    payload.Infer,
+		Message:          payload.Message,
+		Messages:         payload.Messages,
+		UserID:           userID,
+		RunID:            payload.RunID,
+		Metadata:         payload.Metadata,
+		Filters:          payload.Filters,
+		Infer:            payload.Infer,
+		EmbeddingEnabled: payload.EmbeddingEnabled,
 	}
 
 	resp, err := h.service.Add(c.Request().Context(), req)
@@ -187,13 +184,13 @@ func (h *MemoryHandler) Search(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	req := memory.SearchRequest{
-		Query:   payload.Query,
-		UserID:  userID,
-		AgentID: payload.AgentID,
-		RunID:   payload.RunID,
-		Limit:   payload.Limit,
-		Filters: payload.Filters,
-		Sources: payload.Sources,
+		Query:            payload.Query,
+		UserID:           userID,
+		RunID:            payload.RunID,
+		Limit:            payload.Limit,
+		Filters:          payload.Filters,
+		Sources:          payload.Sources,
+		EmbeddingEnabled: payload.EmbeddingEnabled,
 	}
 
 	resp, err := h.service.Search(c.Request().Context(), req)
@@ -281,7 +278,6 @@ func (h *MemoryHandler) Get(c echo.Context) error {
 // @Summary List memories
 // @Description List memories for a user via memory. Auth: Bearer JWT determines user_id (sub or user_id).
 // @Tags memory
-// @Param agent_id query string false "Agent ID"
 // @Param run_id query string false "Run ID"
 // @Param limit query int false "Limit"
 // @Success 200 {object} memory.SearchResponse
@@ -299,9 +295,8 @@ func (h *MemoryHandler) GetAll(c echo.Context) error {
 	}
 
 	req := memory.GetAllRequest{
-		UserID:  userID,
-		AgentID: c.QueryParam("agent_id"),
-		RunID:   c.QueryParam("run_id"),
+		UserID: userID,
+		RunID:  c.QueryParam("run_id"),
 	}
 	if limit := c.QueryParam("limit"); limit != "" {
 		var parsed int
@@ -380,9 +375,8 @@ func (h *MemoryHandler) DeleteAll(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	req := memory.DeleteAllRequest{
-		UserID:  userID,
-		AgentID: payload.AgentID,
-		RunID:   payload.RunID,
+		UserID: userID,
+		RunID:  payload.RunID,
 	}
 
 	resp, err := h.service.DeleteAll(c.Request().Context(), req)

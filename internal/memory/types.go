@@ -6,6 +6,7 @@ import "context"
 type LLM interface {
 	Extract(ctx context.Context, req ExtractRequest) (ExtractResponse, error)
 	Decide(ctx context.Context, req DecideRequest) (DecideResponse, error)
+	DetectLanguage(ctx context.Context, text string) (string, error)
 }
 
 type Message struct {
@@ -14,42 +15,41 @@ type Message struct {
 }
 
 type AddRequest struct {
-	Message  string                 `json:"message,omitempty"`
-	Messages []Message              `json:"messages,omitempty"`
-	UserID   string                 `json:"user_id,omitempty"`
-	AgentID  string                 `json:"agent_id,omitempty"`
-	RunID    string                 `json:"run_id,omitempty"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
-	Filters  map[string]interface{} `json:"filters,omitempty"`
-	Infer    *bool                  `json:"infer,omitempty"`
+	Message          string                 `json:"message,omitempty"`
+	Messages         []Message              `json:"messages,omitempty"`
+	UserID           string                 `json:"user_id,omitempty"`
+	RunID            string                 `json:"run_id,omitempty"`
+	Metadata         map[string]interface{} `json:"metadata,omitempty"`
+	Filters          map[string]interface{} `json:"filters,omitempty"`
+	Infer            *bool                  `json:"infer,omitempty"`
+	EmbeddingEnabled *bool                  `json:"embedding_enabled,omitempty"`
 }
 
 type SearchRequest struct {
-	Query   string                 `json:"query"`
-	UserID  string                 `json:"user_id,omitempty"`
-	AgentID string                 `json:"agent_id,omitempty"`
-	RunID   string                 `json:"run_id,omitempty"`
-	Limit   int                    `json:"limit,omitempty"`
-	Filters map[string]interface{} `json:"filters,omitempty"`
-	Sources []string               `json:"sources,omitempty"`
+	Query            string                 `json:"query"`
+	UserID           string                 `json:"user_id,omitempty"`
+	RunID            string                 `json:"run_id,omitempty"`
+	Limit            int                    `json:"limit,omitempty"`
+	Filters          map[string]interface{} `json:"filters,omitempty"`
+	Sources          []string               `json:"sources,omitempty"`
+	EmbeddingEnabled *bool                  `json:"embedding_enabled,omitempty"`
 }
 
 type UpdateRequest struct {
-	MemoryID string `json:"memory_id"`
-	Memory   string `json:"memory"`
+	MemoryID         string `json:"memory_id"`
+	Memory           string `json:"memory"`
+	EmbeddingEnabled *bool  `json:"embedding_enabled,omitempty"`
 }
 
 type GetAllRequest struct {
-	UserID  string `json:"user_id,omitempty"`
-	AgentID string `json:"agent_id,omitempty"`
-	RunID   string `json:"run_id,omitempty"`
-	Limit   int    `json:"limit,omitempty"`
+	UserID string `json:"user_id,omitempty"`
+	RunID  string `json:"run_id,omitempty"`
+	Limit  int    `json:"limit,omitempty"`
 }
 
 type DeleteAllRequest struct {
-	UserID  string `json:"user_id,omitempty"`
-	AgentID string `json:"agent_id,omitempty"`
-	RunID   string `json:"run_id,omitempty"`
+	UserID string `json:"user_id,omitempty"`
+	RunID  string `json:"run_id,omitempty"`
 }
 
 type EmbedInput struct {
@@ -65,7 +65,6 @@ type EmbedUpsertRequest struct {
 	Input    EmbedInput             `json:"input"`
 	Source   string                 `json:"source,omitempty"`
 	UserID   string                 `json:"user_id,omitempty"`
-	AgentID  string                 `json:"agent_id,omitempty"`
 	RunID    string                 `json:"run_id,omitempty"`
 	Metadata map[string]interface{} `json:"metadata,omitempty"`
 	Filters  map[string]interface{} `json:"filters,omitempty"`
@@ -87,7 +86,6 @@ type MemoryItem struct {
 	Score     float64                `json:"score,omitempty"`
 	Metadata  map[string]interface{} `json:"metadata,omitempty"`
 	UserID    string                 `json:"userId,omitempty"`
-	AgentID   string                 `json:"agentId,omitempty"`
 	RunID     string                 `json:"runId,omitempty"`
 }
 
