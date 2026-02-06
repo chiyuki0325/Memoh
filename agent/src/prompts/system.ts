@@ -1,4 +1,4 @@
-import { quote } from './utils'
+import { block, quote } from './utils'
 import { AgentSkill } from '../types'
 
 export interface SystemParams {
@@ -8,6 +8,7 @@ export interface SystemParams {
   channels: string[]
   skills: AgentSkill[]
   enabledSkills: AgentSkill[]
+  attachments?: string[]
 }
 
 export const skillPrompt = (skill: AgentSkill) => {
@@ -26,6 +27,7 @@ export const system = ({
   channels,
   skills,
   enabledSkills,
+  attachments = [],
 }: SystemParams) => {
   const headers = {
     'language': language,
@@ -33,6 +35,27 @@ export const system = ({
     'max-context-load-time': maxContextLoadTime.toString(),
     'time-now': date.toISOString(),
   }
+
+  const attachmentPaths = attachments
+    .map((p) => (typeof p === 'string' ? p.trim() : ''))
+    .filter(Boolean)
+
+  const attachmentsBlock = attachmentPaths.length
+    ? [
+      '## Current Attachments',
+      '',
+      'The following file paths are available in this request:',
+      '',
+      block(
+        [
+          '<attachments>',
+          ...attachmentPaths.map((p) => `- ${p}`),
+          '</attachments>',
+        ].join('\n')
+      ),
+      '',
+    ].join('\n')
+    : ''
 
   return `
 ---
@@ -67,10 +90,17 @@ Files user uploaded will added to your workspace, the file path will be included
 **For using channel tools**: Add file path to the message header.
 **For directly request**: Use the following format:
 
-<attachments>
-- /path/to/file.pdf
-- /path/to/video.mp4
-</attachments>
+${block([
+  '<attachments>',
+  '- /path/to/file.pdf',
+  '- /path/to/video.mp4',
+  '</attachments>',
+].join('\n'))}
+
+Important rules for attachments blocks:
+- Only include file paths (one per line, prefixed by ${quote('- ')})
+- Do not include any extra text inside ${quote('<attachments>...</attachments>')}
+- You may output the attachments block anywhere in your response; it will be parsed and removed from visible text.
 
 ## Skills
 
@@ -80,5 +110,7 @@ ${skills.map(skill => `- ${skill.name}: ${skill.description}`).join('\n')}
 ## Enabled Skills
 
 ${enabledSkills.map(skill => skillPrompt(skill)).join('\n\n---\n\n')}
+
+${attachmentsBlock}
   `.trim()
 }

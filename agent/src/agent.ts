@@ -5,6 +5,13 @@ import { AuthFetcher } from './index'
 import { createModel } from './model'
 import { AgentAction } from './types/action'
 import { getTools } from './tools'
+import {
+  extractAttachmentsFromText,
+  stripAttachmentsFromMessages,
+  dedupeAttachments,
+  AttachmentsStreamExtractor,
+} from './utils/attachments'
+import type { ContainerFileAttachment } from './types/attachment'
 
 export const createAgent = ({
   model: modelConfig,
@@ -18,7 +25,7 @@ export const createAgent = ({
 }: AgentParams, fetch: AuthFetcher) => {
   const model = createModel(modelConfig)
   
-  const generateSystemPrompt = () => {
+  const generateSystemPrompt = (attachmentPaths: string[] = []) => {
     return system({
       date: new Date(),
       language,
@@ -26,6 +33,7 @@ export const createAgent = ({
       channels,
       skills: [],
       enabledSkills: [],
+      attachments: attachmentPaths,
     })
   }
 
@@ -36,9 +44,15 @@ export const createAgent = ({
     identity,
   })
 
+  const getInputAttachmentPaths = (input: AgentInput): string[] => {
+    return input.attachments
+      .filter((a): a is ContainerFileAttachment => a.type === 'file')
+      .map(a => a.path)
+  }
+
   const generateUserPrompt = (input: AgentInput) => {
     const images = input.attachments.filter(attachment => attachment.type === 'image')
-    const files = input.attachments.filter(attachment => attachment.type === 'file')
+    const files = input.attachments.filter((a): a is ContainerFileAttachment => a.type === 'file')
     const text = user(input.query, {
       contactId: identity.contactId,
       contactName: identity.contactName,
@@ -59,23 +73,29 @@ export const createAgent = ({
   const ask = async (input: AgentInput) => {
     const userPrompt = generateUserPrompt(input)
     const messages = [...input.messages, userPrompt]
+    const attachmentPaths = getInputAttachmentPaths(input)
+    const systemPrompt = generateSystemPrompt(attachmentPaths)
     const { response, reasoning, text, usage } = await generateText({
       model,
       messages,
-      system: generateSystemPrompt(),
+      system: systemPrompt,
       stopWhen: stepCountIs(Infinity),
       prepareStep: () => {
         return {
-          system: generateSystemPrompt(),
+          system: systemPrompt,
         }
       },
       tools,
     })
+    const { cleanedText, attachments: textAttachments } = extractAttachmentsFromText(text)
+    const { messages: strippedMessages, attachments: messageAttachments } = stripAttachmentsFromMessages(response.messages)
+    const allAttachments = dedupeAttachments([...textAttachments, ...messageAttachments])
     return {
-      messages: [userPrompt, ...response.messages],
+      messages: [userPrompt, ...strippedMessages],
       reasoning: reasoning.map(part => part.text),
       usage,
-      text,
+      text: cleanedText,
+      attachments: allAttachments,
     }
   }
 
@@ -147,6 +167,9 @@ export const createAgent = ({
   async function* stream(input: AgentInput): AsyncGenerator<AgentAction> {
     const userPrompt = generateUserPrompt(input)
     const messages = [...input.messages, userPrompt]
+    const attachmentPaths = getInputAttachmentPaths(input)
+    const systemPrompt = generateSystemPrompt(attachmentPaths)
+    const attachmentsExtractor = new AttachmentsStreamExtractor()
     const result: {
       messages: ModelMessage[]
       reasoning: string[]
@@ -159,11 +182,11 @@ export const createAgent = ({
     const { fullStream } = streamText({
       model,
       messages,
-      system: generateSystemPrompt(),
+      system: systemPrompt,
       stopWhen: stepCountIs(Infinity),
       prepareStep: () => {
         return {
-          system: generateSystemPrompt(),
+          system: systemPrompt,
         }
       },
       tools,
@@ -194,14 +217,43 @@ export const createAgent = ({
         case 'text-start': yield {
           type: 'text_start',
         }; break
-        case 'text-delta': yield {
-          type: 'text_delta',
-          delta: chunk.text
-        }; break
-        case 'text-end': yield {
-          type: 'text_end',
-          metadata: chunk
-        }; break
+        case 'text-delta': {
+          const { visibleText, attachments } = attachmentsExtractor.push(chunk.text)
+          if (visibleText) {
+            yield {
+              type: 'text_delta',
+              delta: visibleText,
+            }
+          }
+          if (attachments.length) {
+            yield {
+              type: 'attachment_delta',
+              attachments,
+            }
+          }
+          break
+        }
+        case 'text-end': {
+          // Flush any remaining buffered content before ending the text stream.
+          const remainder = attachmentsExtractor.flushRemainder()
+          if (remainder.visibleText) {
+            yield {
+              type: 'text_delta',
+              delta: remainder.visibleText,
+            }
+          }
+          if (remainder.attachments.length) {
+            yield {
+              type: 'attachment_delta',
+              attachments: remainder.attachments,
+            }
+          }
+          yield {
+            type: 'text_end',
+            metadata: chunk,
+          }
+          break
+        }
         case 'tool-call': yield {
           type: 'tool_call_start',
           toolName: chunk.toolName,
@@ -224,9 +276,11 @@ export const createAgent = ({
         }
       }
     }
+
+    const { messages: strippedMessages } = stripAttachmentsFromMessages(result.messages)
     yield {
       type: 'agent_end',
-      messages: [userPrompt, ...result.messages],
+      messages: [userPrompt, ...strippedMessages],
       skills: [],
       reasoning: result.reasoning,
       usage: result.usage!,
