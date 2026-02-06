@@ -4,7 +4,7 @@ import { createAgent } from '../agent'
 import { createAuthFetcher } from '../index'
 import { ModelConfig } from '../types'
 import { bearerMiddleware } from '../middlewares/bearer'
-import { AllowedActionModel, AttachmentModel, IdentityContextModel, ModelConfigModel } from '../models'
+import { AllowedActionModel, AttachmentModel, IdentityContextModel, MCPConnectionModel, ModelConfigModel } from '../models'
 import { allActions } from '../types'
 
 const AgentModel = z.object({
@@ -18,6 +18,7 @@ const AgentModel = z.object({
   query: z.string(),
   identity: IdentityContextModel,
   attachments: z.array(AttachmentModel).optional().default([]),
+  mcpConnections: z.array(MCPConnectionModel).optional().default([]),
 })
 
 export const chatModule = new Elysia({ prefix: '/chat' })
@@ -31,6 +32,7 @@ export const chatModule = new Elysia({ prefix: '/chat' })
       currentChannel: body.currentChannel,
       allowedActions: body.allowedActions,
       identity: body.identity,
+      mcpConnections: body.mcpConnections,
     }, authFetcher)
     return ask({
       query: body.query,
@@ -44,22 +46,23 @@ export const chatModule = new Elysia({ prefix: '/chat' })
   .post('/stream', async function* ({ body, bearer }) {
     try {
       const authFetcher = createAuthFetcher(bearer)
-    const { stream } = createAgent({
-      model: body.model as ModelConfig,
-      activeContextTime: body.activeContextTime,
-      channels: body.channels,
-      currentChannel: body.currentChannel,
-      allowedActions: body.allowedActions,
-      identity: body.identity,
-    }, authFetcher)
-    for await (const action of stream({
-      query: body.query,
-      messages: body.messages,
-      skills: body.skills,
-      attachments: body.attachments,
-    })) {
-      yield sse(JSON.stringify(action))
-    }
+      const { stream } = createAgent({
+        model: body.model as ModelConfig,
+        activeContextTime: body.activeContextTime,
+        channels: body.channels,
+        currentChannel: body.currentChannel,
+        allowedActions: body.allowedActions,
+        identity: body.identity,
+        mcpConnections: body.mcpConnections,
+      }, authFetcher)
+      for await (const action of stream({
+        query: body.query,
+        messages: body.messages,
+        skills: body.skills,
+        attachments: body.attachments,
+      })) {
+        yield sse(JSON.stringify(action))
+      }
     } catch (error) {
       console.error(error)
       yield sse(JSON.stringify({
@@ -70,4 +73,3 @@ export const chatModule = new Elysia({ prefix: '/chat' })
   }, {
     body: AgentModel,
   })
-  

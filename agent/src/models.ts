@@ -55,3 +55,28 @@ export const FileAttachmentModel = z.object({
 })
 
 export const AttachmentModel = z.union([ImageAttachmentModel, FileAttachmentModel])
+
+export const HTTPMCPConnectionModel = z.object({
+  name: z.string().min(1, 'Name is required'),
+  type: z.literal('http'),
+  url: z.string().min(1, 'URL is required'),
+  headers: z.record(z.string(), z.string()).optional(),
+})
+
+export const SSEMCPConnectionModel = z.object({
+  name: z.string().min(1, 'Name is required'),
+  type: z.literal('sse'),
+  url: z.string().min(1, 'URL is required'),
+  headers: z.record(z.string(), z.string()).optional(),
+})
+
+export const StdioMCPConnectionModel = z.object({
+  name: z.string().min(1, 'Name is required'),
+  type: z.literal('stdio'),
+  command: z.string().min(1, 'Command is required'),
+  args: z.array(z.string()),
+  env: z.record(z.string(), z.string()).optional(),
+  cwd: z.string().optional(),
+})
+
+export const MCPConnectionModel = z.union([HTTPMCPConnectionModel, SSEMCPConnectionModel, StdioMCPConnectionModel])

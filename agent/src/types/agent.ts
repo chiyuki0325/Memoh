@@ -1,6 +1,7 @@
 import { ModelMessage } from 'ai'
 import { ModelConfig } from './model'
 import { AgentAttachment } from './attachment'
+import { MCPConnection } from './mcp'
 
 export interface IdentityContext {
   botId: string
@@ -43,6 +44,7 @@ export interface AgentParams {
   identity: IdentityContext
   channels?: string[]
   currentChannel?: string
+  mcpConnections?: MCPConnection[]
 }
 
 export interface AgentInput {

@@ -12,6 +12,7 @@ import {
   AttachmentsStreamExtractor,
 } from './utils/attachments'
 import type { ContainerFileAttachment } from './types/attachment'
+import { getMCPTools } from './tools/mcp'
 
 export const createAgent = ({
   model: modelConfig,
@@ -21,6 +22,7 @@ export const createAgent = ({
   allowedActions = allActions,
   identity,
   channels = [],
+  mcpConnections = [],
   currentChannel = 'Unknown Channel',
 }: AgentParams, fetch: AuthFetcher) => {
   const model = createModel(modelConfig)
@@ -36,12 +38,20 @@ export const createAgent = ({
     })
   }
 
-  const tools = getTools(allowedActions, {
-    fetch,
-    model: modelConfig,
-    brave,
-    identity,
-  })
+  const getAgentTools = async () => {
+    const tools = getTools(allowedActions, {
+      fetch,
+      model: modelConfig,
+      brave,
+      identity,
+    })
+    const { tools: mcpTools, close: closeMCP } = await getMCPTools(mcpConnections)
+    Object.assign(tools, mcpTools)
+    return {
+      tools,
+      close: closeMCP,
+    }
+  }
 
   const generateUserPrompt = (input: AgentInput) => {
     const images = input.attachments.filter(attachment => attachment.type === 'image')
@@ -67,6 +77,7 @@ export const createAgent = ({
     const userPrompt = generateUserPrompt(input)
     const messages = [...input.messages, userPrompt]
     const systemPrompt = generateSystemPrompt()
+    const { tools, close } = await getAgentTools()
     const { response, reasoning, text, usage } = await generateText({
       model,
       messages,
@@ -76,6 +87,9 @@ export const createAgent = ({
         return {
           system: systemPrompt,
         }
+      },
+      onFinish: async () => {
+        await close()
       },
       tools,
     })
@@ -111,6 +125,7 @@ export const createAgent = ({
       })
     }
     const messages = [...params.messages, userPrompt]
+    const { tools, close } = await getAgentTools()
     const { response, reasoning, text, usage } = await generateText({
       model,
       messages,
@@ -120,6 +135,9 @@ export const createAgent = ({
         return {
           system: generateSubagentSystemPrompt(),
         }
+      },
+      onFinish: async () => {
+        await close()
       },
       tools,
     })
@@ -142,11 +160,16 @@ export const createAgent = ({
       ]
     }
     const messages = [...params.messages, scheduleMessage]
+    const { tools, close } = await getAgentTools()
     const { response, reasoning, text, usage } = await generateText({
       model,
       messages,
       system: generateSystemPrompt(),
       stopWhen: stepCountIs(Infinity),
+      onFinish: async () => {
+        await close()
+      },
+      tools,
     })
     return {
       messages: [scheduleMessage, ...response.messages],
@@ -170,6 +193,7 @@ export const createAgent = ({
       reasoning: [],
       usage: null
     }
+    const { tools, close } = await getAgentTools()
     const { fullStream } = streamText({
       model,
       messages,
@@ -181,7 +205,8 @@ export const createAgent = ({
         }
       },
       tools,
-      onFinish: ({ usage, reasoning, response }) => {
+      onFinish: async ({ usage, reasoning, response }) => {
+        await close()
         result.usage = usage as never
         result.reasoning = reasoning.map(part => part.text)
         result.messages = response.messages
