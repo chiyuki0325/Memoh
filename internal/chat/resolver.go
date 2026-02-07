@@ -24,6 +24,19 @@ import (
 
 const defaultMaxContextMinutes = 24 * 60
 
+// SkillEntry represents a skill loaded from the container.
+type SkillEntry struct {
+	Name        string
+	Description string
+	Content     string
+	Metadata    map[string]any
+}
+
+// SkillLoader loads skills for a given bot from its container.
+type SkillLoader interface {
+	LoadSkills(ctx context.Context, botID string) ([]SkillEntry, error)
+}
+
 // Resolver orchestrates chat with the agent gateway.
 type Resolver struct {
 	modelsService   *models.Service
@@ -31,6 +44,7 @@ type Resolver struct {
 	memoryService   *memory.Service
 	historyService  *history.Service
 	settingsService *settings.Service
+	skillLoader     SkillLoader
 	gatewayBaseURL  string
 	timeout         time.Duration
 	logger          *slog.Logger
@@ -70,6 +84,11 @@ func NewResolver(
 	}
 }
 
+// SetSkillLoader sets the skill loader used to populate usable skills in gateway requests.
+func (r *Resolver) SetSkillLoader(sl SkillLoader) {
+	r.skillLoader = sl
+}
+
 // --- gateway payload ---
 
 type gatewayModelConfig struct {
@@ -93,6 +112,13 @@ type gatewayIdentity struct {
 	SessionToken    string `json:"sessionToken,omitempty"`
 }
 
+type gatewaySkill struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Content     string         `json:"content"`
+	Metadata    map[string]any `json:"metadata,omitempty"`
+}
+
 type gatewayRequest struct {
 	Model             gatewayModelConfig `json:"model"`
 	ActiveContextTime int                `json:"activeContextTime"`
@@ -101,6 +127,7 @@ type gatewayRequest struct {
 	AllowedActions    []string           `json:"allowedActions,omitempty"`
 	Messages          []ModelMessage     `json:"messages"`
 	Skills            []string           `json:"skills"`
+	UsableSkills      []gatewaySkill     `json:"usableSkills"`
 	Query             string             `json:"query"`
 	Identity          gatewayIdentity    `json:"identity"`
 	Attachments       []any              `json:"attachments"`
@@ -130,6 +157,7 @@ type triggerScheduleRequest struct {
 	AllowedActions    []string           `json:"allowedActions,omitempty"`
 	Messages          []ModelMessage     `json:"messages"`
 	Skills            []string           `json:"skills"`
+	UsableSkills      []gatewaySkill     `json:"usableSkills"`
 	Identity          gatewayIdentity    `json:"identity"`
 	Attachments       []any              `json:"attachments"`
 	Schedule          gatewaySchedule    `json:"schedule"`
@@ -191,6 +219,27 @@ func (r *Resolver) resolve(ctx context.Context, req ChatRequest) (resolvedContex
 	skills := dedup(append(historySkills, req.Skills...))
 	containerID := r.resolveContainerID(ctx, req.BotID, req.ContainerID)
 
+	var usableSkills []gatewaySkill
+	if r.skillLoader != nil {
+		entries, err := r.skillLoader.LoadSkills(ctx, req.BotID)
+		if err != nil {
+			r.logger.Warn("failed to load usable skills", slog.String("bot_id", req.BotID), slog.Any("error", err))
+		} else {
+			usableSkills = make([]gatewaySkill, 0, len(entries))
+			for _, e := range entries {
+				usableSkills = append(usableSkills, gatewaySkill{
+					Name:        e.Name,
+					Description: e.Description,
+					Content:     e.Content,
+					Metadata:    e.Metadata,
+				})
+			}
+		}
+	}
+	if usableSkills == nil {
+		usableSkills = []gatewaySkill{}
+	}
+
 	payload := gatewayRequest{
 		Model: gatewayModelConfig{
 			ModelID:    chatModel.ModelID,
@@ -205,6 +254,7 @@ func (r *Resolver) resolve(ctx context.Context, req ChatRequest) (resolvedContex
 		AllowedActions:    req.AllowedActions,
 		Messages:          nonNilMessages(messages),
 		Skills:            nonNilStrings(skills),
+		UsableSkills:      usableSkills,
 		Query:             req.Query,
 		Identity: gatewayIdentity{
 			BotID:           req.BotID,
@@ -279,6 +329,7 @@ func (r *Resolver) TriggerSchedule(ctx context.Context, botID string, payload sc
 		AllowedActions:    rc.payload.AllowedActions,
 		Messages:          rc.payload.Messages,
 		Skills:            rc.payload.Skills,
+		UsableSkills:      rc.payload.UsableSkills,
 		Identity: gatewayIdentity{
 			BotID:       rc.payload.Identity.BotID,
 			SessionID:   rc.payload.Identity.SessionID,

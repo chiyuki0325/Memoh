@@ -4942,6 +4942,10 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
                 "name": {
                     "type": "string"
                 }

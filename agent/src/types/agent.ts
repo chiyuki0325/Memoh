@@ -51,6 +51,7 @@ export interface AgentParams {
   mcpConnections?: MCPConnection[]
   identity?: IdentityContext
   auth: AgentAuthContext
+  skills?: AgentSkill[]
 }
 
 export interface AgentInput {
@@ -64,6 +65,5 @@ export interface AgentSkill {
   name: string
   description: string
   content: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metadata: Record<string, any>
+  metadata?: Record<string, unknown>
 }

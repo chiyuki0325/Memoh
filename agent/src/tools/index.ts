@@ -7,17 +7,19 @@ import { getMemoryTools } from './memory'
 import { getSubagentTools } from './subagent'
 import { getContactTools } from './contact'
 import { getMessageTools } from './message'
+import { getSkillTools } from './skill'
 
 export interface ToolsParams {
   fetch: AuthFetcher
   model: ModelConfig
   brave?: BraveConfig
   identity: IdentityContext
+  enableSkill: (skill: string) => void
 }
 
 export const getTools = (
   actions: AgentAction[],
-  { fetch, model, brave, identity }: ToolsParams
+  { fetch, model, brave, identity, enableSkill }: ToolsParams
 ) => {
   const tools: ToolSet = {}
   if (actions.includes(AgentAction.Web) && brave) {
@@ -44,5 +46,9 @@ export const getTools = (
     const messageTools = getMessageTools({ fetch, identity })
     Object.assign(tools, messageTools)
   }
-  return tools
+  if (actions.includes(AgentAction.Skill)) {
+    const skillTools = getSkillTools({ useSkill: enableSkill })
+    Object.assign(tools, skillTools)
+  }
+    return tools
 }

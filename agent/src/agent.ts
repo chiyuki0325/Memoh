@@ -1,5 +1,5 @@
 import { generateText, ImagePart, LanguageModelUsage, ModelMessage, stepCountIs, streamText, UserModelMessage } from 'ai'
-import { AgentInput, AgentParams, allActions, HTTPMCPConnection, MCPConnection, Schedule } from './types'
+import { AgentInput, AgentParams, AgentSkill, allActions, HTTPMCPConnection, MCPConnection, Schedule } from './types'
 import { system, schedule, user, subagentSystem } from './prompts'
 import { AuthFetcher } from './index'
 import { createModel } from './model'
@@ -22,6 +22,7 @@ export const createAgent = ({
   allowedActions = allActions,
   channels = [],
   mcpConnections = [],
+  skills = [],
   currentChannel = 'Unknown Channel',
   identity = {
     botId: '',
@@ -33,6 +34,18 @@ export const createAgent = ({
   auth,
 }: AgentParams, fetch: AuthFetcher) => {
   const model = createModel(modelConfig)
+  const enabledSkills: AgentSkill[] = []
+
+  const enableSkill = (skill: string) => {
+    const agentSkill = skills.find(s => s.name === skill)
+    if (agentSkill) {
+      enabledSkills.push(agentSkill)
+    }
+  }
+
+  const getEnabledSkills = () => {
+    return enabledSkills.map(skill => skill.name)
+  }
 
   const getDefaultMCPConnections = (): MCPConnection[] => {
     const fs: HTTPMCPConnection = {
@@ -52,8 +65,8 @@ export const createAgent = ({
       language,
       maxContextLoadTime: activeContextTime,
       channels,
-      skills: [],
-      enabledSkills: [],
+      skills,
+      enabledSkills,
     })
   }
 
@@ -63,6 +76,7 @@ export const createAgent = ({
       model: modelConfig,
       brave,
       identity,
+      enableSkill,
     })
     const defaultMCPConnections = getDefaultMCPConnections()
     const { tools: mcpTools, close: closeMCP } = await getMCPTools([
@@ -99,6 +113,7 @@ export const createAgent = ({
   const ask = async (input: AgentInput) => {
     const userPrompt = generateUserPrompt(input)
     const messages = [...input.messages, userPrompt]
+    input.skills.forEach(skill => enableSkill(skill))
     const systemPrompt = generateSystemPrompt()
     const { tools, close } = await getAgentTools()
     const { response, reasoning, text, usage } = await generateText({
@@ -125,6 +140,7 @@ export const createAgent = ({
       usage,
       text: cleanedText,
       attachments: allAttachments,
+      skills: getEnabledSkills(),
     }
   }
 
@@ -169,12 +185,14 @@ export const createAgent = ({
       reasoning: reasoning.map(part => part.text),
       usage,
       text,
+      skills: getEnabledSkills(),
     }
   }
 
   const triggerSchedule = async (params: {
     schedule: Schedule
     messages: ModelMessage[]
+    skills: string[]
   }) => {
     const scheduleMessage: UserModelMessage = {
       role: 'user',
@@ -183,6 +201,7 @@ export const createAgent = ({
       ]
     }
     const messages = [...params.messages, scheduleMessage]
+    params.skills.forEach(skill => enableSkill(skill))
     const { tools, close } = await getAgentTools()
     const { response, reasoning, text, usage } = await generateText({
       model,
@@ -199,12 +218,14 @@ export const createAgent = ({
       reasoning: reasoning.map(part => part.text),
       usage,
       text,
+      skills: getEnabledSkills(),
     }
   }
 
   async function* stream(input: AgentInput): AsyncGenerator<AgentAction> {
     const userPrompt = generateUserPrompt(input)
     const messages = [...input.messages, userPrompt]
+    input.skills.forEach(skill => enableSkill(skill))
     const systemPrompt = generateSystemPrompt()
     const attachmentsExtractor = new AttachmentsStreamExtractor()
     const result: {
@@ -320,9 +341,9 @@ export const createAgent = ({
     yield {
       type: 'agent_end',
       messages: [userPrompt, ...strippedMessages],
-      skills: [],
       reasoning: result.reasoning,
       usage: result.usage!,
+      skills: getEnabledSkills(),
     }
   }
 

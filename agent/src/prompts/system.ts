@@ -35,6 +35,8 @@ export const system = ({
     'time-now': date.toISOString(),
   }
 
+  console.log('enabledSkills', enabledSkills)
+
   return `
 ---
 ${Bun.YAML.stringify(headers)}

@@ -11,15 +11,17 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"gopkg.in/yaml.v3"
 
 	"github.com/memohai/memoh/internal/config"
 	mcptools "github.com/memohai/memoh/internal/mcp"
 )
 
 type SkillItem struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Content     string `json:"content"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Content     string         `json:"content"`
+	Metadata    map[string]any `json:"metadata,omitempty"`
 }
 
 type SkillsResponse struct {
@@ -64,7 +66,7 @@ func (h *ContainerdHandler) ListSkills(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	listPayload, err := h.callMCPTool(ctx, containerID, "fs.list", map[string]any{
+	listPayload, err := h.callMCPTool(ctx, containerID, "list", map[string]any{
 		"path":      ".skills",
 		"recursive": false,
 	})
@@ -82,14 +84,16 @@ func (h *ContainerdHandler) ListSkills(c echo.Context) error {
 		if skillPath == "" {
 			continue
 		}
-		content, err := h.readSkillFile(ctx, containerID, skillPath)
+		raw, err := h.readSkillFile(ctx, containerID, skillPath)
 		if err != nil {
 			continue
 		}
+		parsed := parseSkillFile(raw, name)
 		skills = append(skills, SkillItem{
-			Name:        name,
-			Description: skillDescription(content),
-			Content:     content,
+			Name:        parsed.Name,
+			Description: parsed.Description,
+			Content:     parsed.Content,
+			Metadata:    parsed.Metadata,
 		})
 	}
 
@@ -137,7 +141,7 @@ func (h *ContainerdHandler) UpsertSkills(c echo.Context) error {
 			content = buildSkillContent(name, strings.TrimSpace(skill.Description))
 		}
 		filePath := path.Join(".skills", name, "SKILL.md")
-		if _, err := h.callMCPTool(ctx, containerID, "fs.write", map[string]any{
+		if _, err := h.callMCPTool(ctx, containerID, "write", map[string]any{
 			"path":    filePath,
 			"content": content,
 		}); err != nil {
@@ -186,7 +190,7 @@ func (h *ContainerdHandler) DeleteSkills(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "invalid skill name")
 		}
 		deletePath := path.Join(".skills", skillName)
-		if _, err := h.callMCPTool(ctx, containerID, "fs.delete", map[string]any{
+		if _, err := h.callMCPTool(ctx, containerID, "delete", map[string]any{
 			"path": deletePath,
 		}); err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -194,6 +198,53 @@ func (h *ContainerdHandler) DeleteSkills(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, skillsOpResponse{OK: true})
+}
+
+// LoadSkills loads all skills from the container for the given bot.
+// This implements chat.SkillLoader.
+func (h *ContainerdHandler) LoadSkills(ctx context.Context, botID string) ([]SkillItem, error) {
+	containerID, err := h.botContainerID(ctx, botID)
+	if err != nil {
+		return nil, err
+	}
+	if err := h.ensureTaskRunning(ctx, containerID); err != nil {
+		return nil, err
+	}
+	if err := h.ensureSkillsDirHost(botID); err != nil {
+		return nil, err
+	}
+
+	listPayload, err := h.callMCPTool(ctx, containerID, "list", map[string]any{
+		"path":      ".skills",
+		"recursive": false,
+	})
+	if err != nil {
+		return nil, err
+	}
+	entries, err := extractListEntries(listPayload)
+	if err != nil {
+		return nil, err
+	}
+
+	skills := make([]SkillItem, 0, len(entries))
+	for _, entry := range entries {
+		skillPath, name := skillPathForEntry(entry)
+		if skillPath == "" {
+			continue
+		}
+		raw, err := h.readSkillFile(ctx, containerID, skillPath)
+		if err != nil {
+			continue
+		}
+		parsed := parseSkillFile(raw, name)
+		skills = append(skills, SkillItem{
+			Name:        parsed.Name,
+			Description: parsed.Description,
+			Content:     parsed.Content,
+			Metadata:    parsed.Metadata,
+		})
+	}
+	return skills, nil
 }
 
 func (h *ContainerdHandler) ensureSkillsDirHost(botID string) error {
@@ -206,7 +257,7 @@ func (h *ContainerdHandler) ensureSkillsDirHost(botID string) error {
 }
 
 func (h *ContainerdHandler) readSkillFile(ctx context.Context, containerID, filePath string) (string, error) {
-	payload, err := h.callMCPTool(ctx, containerID, "fs.read", map[string]any{
+	payload, err := h.callMCPTool(ctx, containerID, "read", map[string]any{
 		"path": filePath,
 	})
 	if err != nil {
@@ -309,26 +360,73 @@ func skillPathForEntry(entry skillEntry) (string, string) {
 	return "", ""
 }
 
-func skillDescription(content string) string {
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		if strings.HasPrefix(line, "#") {
-			return strings.TrimSpace(strings.TrimPrefix(line, "#"))
-		}
-		return line
+// parsedSkill holds the result of parsing a SKILL.md file with YAML frontmatter.
+type parsedSkill struct {
+	Name        string
+	Description string
+	Content     string         // body after frontmatter
+	Metadata    map[string]any // "metadata" key from frontmatter
+}
+
+// parseSkillFile parses a SKILL.md file with YAML frontmatter delimited by "---".
+// Format:
+//
+//	---
+//	name: your-skill-name
+//	description: Brief description
+//	metadata:
+//	  key: value
+//	---
+//	# Body content ...
+func parseSkillFile(raw string, fallbackName string) parsedSkill {
+	result := parsedSkill{Name: fallbackName}
+
+	trimmed := strings.TrimSpace(raw)
+	if !strings.HasPrefix(trimmed, "---") {
+		return result
 	}
-	return ""
+
+	// Find closing "---".
+	rest := trimmed[3:]
+	rest = strings.TrimLeft(rest, " \t")
+	if len(rest) > 0 && rest[0] == '\n' {
+		rest = rest[1:]
+	} else if len(rest) > 1 && rest[0] == '\r' && rest[1] == '\n' {
+		rest = rest[2:]
+	}
+	closingIdx := strings.Index(rest, "\n---")
+	if closingIdx < 0 {
+		return result
+	}
+
+	frontmatterRaw := rest[:closingIdx]
+	body := rest[closingIdx+4:]
+	body = strings.TrimLeft(body, "\r\n")
+	result.Content = body
+
+	var fm struct {
+		Name        string         `yaml:"name"`
+		Description string         `yaml:"description"`
+		Metadata    map[string]any `yaml:"metadata"`
+	}
+	if err := yaml.Unmarshal([]byte(frontmatterRaw), &fm); err != nil {
+		return result
+	}
+
+	if strings.TrimSpace(fm.Name) != "" {
+		result.Name = strings.TrimSpace(fm.Name)
+	}
+	result.Description = strings.TrimSpace(fm.Description)
+	result.Metadata = fm.Metadata
+
+	return result
 }
 
 func buildSkillContent(name, description string) string {
 	if description == "" {
-		return "# " + name
+		description = name
 	}
-	return "# " + name + "\n\n" + description
+	return "---\nname: " + name + "\ndescription: " + description + "\n---\n\n# " + name + "\n\n" + description
 }
 
 func isValidSkillName(name string) bool {

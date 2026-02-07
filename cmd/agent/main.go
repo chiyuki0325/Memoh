@@ -156,6 +156,7 @@ func main() {
 	preauthHandler := handlers.NewPreauthHandler(preauthService, botService, usersService)
 
 	chatResolver = chat.NewResolver(logger.L, modelsService, queries, memoryService, historyService, settingsService, cfg.AgentGateway.BaseURL(), 120*time.Second)
+	chatResolver.SetSkillLoader(&skillLoaderAdapter{handler: containerdHandler})
 	embeddingsHandler := handlers.NewEmbeddingsHandler(logger.L, modelsService, queries)
 	swaggerHandler := handlers.NewSwaggerHandler(logger.L)
 	chatHandler := handlers.NewChatHandler(logger.L, chatResolver, botService, usersService)
@@ -337,4 +338,26 @@ func (c *lazyLLMClient) resolve(ctx context.Context) (memory.LLM, error) {
 		return nil, fmt.Errorf("memory provider client type not supported: %s", memoryProvider.ClientType)
 	}
 	return memory.NewLLMClient(c.logger, memoryProvider.BaseUrl, memoryProvider.ApiKey, memoryModel.ModelID, c.timeout)
+}
+
+// skillLoaderAdapter bridges handlers.ContainerdHandler to chat.SkillLoader.
+type skillLoaderAdapter struct {
+	handler *handlers.ContainerdHandler
+}
+
+func (a *skillLoaderAdapter) LoadSkills(ctx context.Context, botID string) ([]chat.SkillEntry, error) {
+	items, err := a.handler.LoadSkills(ctx, botID)
+	if err != nil {
+		return nil, err
+	}
+	entries := make([]chat.SkillEntry, len(items))
+	for i, item := range items {
+		entries[i] = chat.SkillEntry{
+			Name:        item.Name,
+			Description: item.Description,
+			Content:     item.Content,
+			Metadata:    item.Metadata,
+		}
+	}
+	return entries, nil
 }

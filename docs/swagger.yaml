@@ -654,6 +654,9 @@ definitions:
         type: string
       description:
         type: string
+      metadata:
+        additionalProperties: {}
+        type: object
       name:
         type: string
     type: object
