@@ -3,7 +3,7 @@
     <div class="**:[input]:mt-3 **:[input]:mb-4">
       <section>
         <h4 class="scroll-m-20 font-semibold tracking-tight">
-          Name
+          {{ $t('provider.name') }}
         </h4>
         <FormField
           v-slot="{ componentField }"
@@ -13,7 +13,7 @@
             <FormControl>
               <Input
                 type="text"
-                placeholder="请输入名称"
+                :placeholder="$t('provider.namePlaceholder')"
                 v-bind="componentField"
               />
             </FormControl>
@@ -23,7 +23,7 @@
 
       <section>
         <h4 class="scroll-m-20 font-semibold tracking-tight">
-          API 密钥
+          {{ $t('provider.apiKey') }}
         </h4>
         <FormField
           v-slot="{ componentField }"
@@ -33,7 +33,7 @@
             <FormControl>
               <Input
                 type="text"
-                placeholder="请输入API密钥"
+                :placeholder="$t('provider.apiKeyPlaceholder')"
                 v-bind="componentField"
               />
             </FormControl>
@@ -43,7 +43,7 @@
 
       <section>
         <h4 class="scroll-m-20 font-semibold tracking-tight">
-          URL
+          {{ $t('provider.url') }}
         </h4>
         <FormField
           v-slot="{ componentField }"
@@ -53,7 +53,7 @@
             <FormControl>
               <Input
                 type="text"
-                placeholder="请输入URL"
+                :placeholder="$t('provider.urlPlaceholder')"
                 v-bind="componentField"
               />
             </FormControl>
@@ -64,7 +64,7 @@
 
     <section class="flex justify-end mt-4 gap-4">
       <ConfirmPopover
-        message="确认是否删除模型平台?"
+        :message="$t('provider.deleteConfirm')"
         :loading="deleteLoading"
         @confirm="$emit('delete')"
       >
@@ -80,7 +80,7 @@
         :disabled="!hasChanges || !form.meta.value.valid"
       >
         <Spinner v-if="editLoading" />
-        确定修改
+        {{ $t('provider.saveChanges') }}
       </Button>
     </section>
   </form>
@@ -96,7 +96,7 @@ import {
   Spinner,
 } from '@memoh/ui'
 import ConfirmPopover from '@/components/confirm-popover/index.vue'
-import { computed, toValue, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { toTypedSchema } from '@vee-validate/zod'
 import z from 'zod'
 import { useForm } from 'vee-validate'

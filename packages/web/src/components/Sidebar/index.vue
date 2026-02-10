@@ -76,33 +76,20 @@ const curSelectSlide = (cur: string) => computed(() => {
 })
 const sidebarInfo = computed(() => [
   {
-    title: t('slidebar.chat'),
+    title: t('sidebar.chat'),
     name: 'chat',
-    icon: ['far', 'comments']
+    icon: ['far', 'comments'],
   },
-  // {
-  //   title: t('slidebar.home'),
-  //   name: 'home',
-  //   icon: mdiHome
-  // },
   {
-    title: t('slidebar.model_setting'),
+    title: t('sidebar.models'),
     name: 'models',
-    icon: ['fas', 'robot']
-  }, {
-    title: t('slidebar.setting'),
-    name: 'settings',
-    icon: ['fas', 'gear']
+    icon: ['fas', 'robot'],
   },
-  // {
-  //   title: 'MCP',
-  //   name: 'mcp',
-  //   icon: mdiListBox
-  // }, {
-  //   title: t('slidebar.platform'),
-  //   name: 'platform',
-  //   icon: mdiBookArrowDown
-  // }
+  {
+    title: t('sidebar.settings'),
+    name: 'settings',
+    icon: ['fas', 'gear'],
+  },
 ])
 
 </script>

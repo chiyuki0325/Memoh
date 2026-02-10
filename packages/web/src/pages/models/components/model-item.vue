@@ -18,7 +18,7 @@
       </Button>
 
       <ConfirmPopover
-        message="确认是否删除模型?"
+        :message="$t('models.deleteModelConfirm')"
         :loading="deleteLoading"
         @confirm="$emit('delete', model.name)"
       >

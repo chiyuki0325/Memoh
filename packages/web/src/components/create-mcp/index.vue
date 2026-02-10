@@ -6,15 +6,15 @@
           variant="default"
           class="ml-auto my-4"
         >
-          {{ $t("button.add", { msg: "MCP" }) }}
+          {{ $t('mcp.addTitle') }}
         </Button>
       </DialogTrigger>
       <DialogContent class="sm:max-w-106.25">
         <form @submit="createMCP">
           <DialogHeader>
-            <DialogTitle>{{ $t("button.add", { msg: "MCP" }) }}</DialogTitle>
+            <DialogTitle>{{ $t('mcp.addTitle') }}</DialogTitle>
             <DialogDescription class="mb-4">
-              添加MCP完成操作
+              {{ $t('mcp.addDescription') }}
             </DialogDescription>
           </DialogHeader>
 
@@ -26,12 +26,12 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Name
+                  {{ $t('mcp.name') }}
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="text"
-                    :placeholder="$t('prompt.enter', { msg: 'Name' })"
+                    :placeholder="$t('mcp.namePlaceholder')"
                     v-bind="componentField"
                     autocomplete="name"
                   />
@@ -49,12 +49,12 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Type
+                  {{ $t('mcp.type') }}
                 </FormLabel>
                 <FormControl>
                   <Select v-bind="componentField">
                     <SelectTrigger class="w-full">
-                      <SelectValue :placeholder="$t('prompt.select', { msg: 'Type' })" />
+                      <SelectValue :placeholder="$t('mcp.typePlaceholder')" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -78,12 +78,12 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Cwd
+                  {{ $t('mcp.cwd') }}
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="text"
-                    :placeholder="$t('prompt.enter', { msg: 'cwd' })"
+                    :placeholder="$t('mcp.cwdPlaceholder')"
                     v-bind="componentField"
                     autocomplete="cwd"
                   />
@@ -101,11 +101,11 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Command
+                  {{ $t('mcp.command') }}
                 </FormLabel>
                 <FormControl>
                   <Input
-                    :placeholder="$t('prompt.enter', { msg: 'Command' })"
+                    :placeholder="$t('mcp.commandPlaceholder')"
                     v-bind="componentField"
                   />
                 </FormControl>
@@ -122,7 +122,7 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Arguments
+                  {{ $t('mcp.arguments') }}
                 </FormLabel>
                 <FormControl>
                   <TagsInput
@@ -140,7 +140,7 @@
                       <TagsInputItemDelete />
                     </TagsInputItem>
                     <TagsInputInput
-                      :placeholder="$t('prompt.enter', { msg: 'Arguments' })"
+                      :placeholder="$t('mcp.argumentsPlaceholder')"
                       class="w-full py-1"
                     />
                   </TagsInput>
@@ -158,7 +158,7 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Env
+                  {{ $t('mcp.env') }}
                 </FormLabel>
                 <FormControl>
                   <TagsInput
@@ -176,7 +176,7 @@
                       <TagsInputItemDelete />
                     </TagsInputItem>
                     <TagsInputInput
-                      :placeholder="$t('prompt.enter', { msg: 'Env' })"
+                      :placeholder="$t('mcp.envPlaceholder')"
                       class="w-full py-1"
                     />
                   </TagsInput>
@@ -195,7 +195,7 @@
               <FormItem>
                 <FormControl>
                   <section class="flex gap-4">
-                    <Label>{{ $t('state.open') }}</Label>
+                    <Label>{{ $t('mcp.active') }}</Label>
                     <Switch
                       :model-value="componentField.modelValue"
                       @update:model-value="componentField['onUpdate:modelValue']"
@@ -212,11 +212,11 @@
           <DialogFooter class="mt-4">
             <DialogClose as-child>
               <Button variant="outline">
-                Cancel
+                {{ $t('common.cancel') }}
               </Button>
             </DialogClose>
             <Button type="submit">
-              {{ $t("button.add", { msg: "MCP" }) }}
+              {{ $t('mcp.addTitle') }}
             </Button>
           </DialogFooter>
         </form>

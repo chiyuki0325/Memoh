@@ -95,7 +95,7 @@ const openStatus = reactive({
             <InputGroup class="shadow-none">
               <InputGroupInput
                 v-model="searchProviderTxt.temp_value"
-                placeholder="搜索模型平台"
+                :placeholder="$t('models.searchPlaceholder')"
               />
               <InputGroupAddon
                 align="inline-end"
@@ -136,7 +136,7 @@ const openStatus = reactive({
           <SidebarFooter>
             <Select v-model:model-value="filterProvider">
               <SelectTrigger class="w-full">
-                <SelectValue :placeholder="$t('prompt.select', { msg: 'Type' })" />
+                <SelectValue :placeholder="$t('provider.typePlaceholder')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
@@ -169,8 +169,8 @@ const openStatus = reactive({
                 <FontAwesomeIcon :icon="['far', 'rectangle-list']" />
               </EmptyMedia>
             </EmptyHeader>
-            <EmptyTitle>No Provider</EmptyTitle>
-            <EmptyDescription>没有添加模型提供商,无法配置模型</EmptyDescription>
+            <EmptyTitle>{{ $t('provider.emptyTitle') }}</EmptyTitle>
+            <EmptyDescription>{{ $t('provider.emptyDescription') }}</EmptyDescription>
             <EmptyContent>
               <!-- <Button>Add data</Button> -->
               <AddProvider v-model:open="openStatus.provideOpen" />

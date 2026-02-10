@@ -5,27 +5,27 @@
         :icon="['fas', 'gear']"
         class="mr-2"
       />
-      显示设置
+      {{ $t('settings.display') }}
     </h6>
     <Separator />
 
     <div class="mt-4 space-y-4">
       <div class="flex items-center justify-between">
-        <Label>语言</Label>
+        <Label>{{ $t('settings.language') }}</Label>
         <Select
           :model-value="language"
           @update:model-value="(v) => v && setLanguage(v as Locale)"
         >
           <SelectTrigger class="w-40">
-            <SelectValue placeholder="选择语言" />
+            <SelectValue :placeholder="$t('settings.languagePlaceholder')" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectItem value="zh">
-                中文
+                {{ $t('settings.langZh') }}
               </SelectItem>
               <SelectItem value="en">
-                English
+                {{ $t('settings.langEn') }}
               </SelectItem>
             </SelectGroup>
           </SelectContent>
@@ -35,21 +35,21 @@
       <Separator />
 
       <div class="flex items-center justify-between">
-        <Label>主题</Label>
+        <Label>{{ $t('settings.theme') }}</Label>
         <Select
           :model-value="theme"
           @update:model-value="(v) => v && setTheme(v as 'light' | 'dark')"
         >
           <SelectTrigger class="w-40">
-            <SelectValue placeholder="选择主题" />
+            <SelectValue :placeholder="$t('settings.themePlaceholder')" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               <SelectItem value="light">
-                亮色
+                {{ $t('settings.themeLight') }}
               </SelectItem>
               <SelectItem value="dark">
-                暗色
+                {{ $t('settings.themeDark') }}
               </SelectItem>
             </SelectGroup>
           </SelectContent>
@@ -62,22 +62,22 @@
         <template #default="{ close }">
           <PopoverTrigger as-child>
             <Button variant="outline">
-              {{ $t("login.exit") }}
+              {{ $t('auth.logout') }}
             </Button>
           </PopoverTrigger>
           <PopoverContent class="w-80">
             <p class="mb-4">
-              确认退出登录?
+              {{ $t('auth.logoutConfirm') }}
             </p>
             <div class="flex justify-end gap-3">
               <Button
                 variant="outline"
                 @click="close"
               >
-                取消
+                {{ $t('common.cancel') }}
               </Button>
               <Button @click="exit(); close()">
-                确定
+                {{ $t('common.confirm') }}
               </Button>
             </div>
           </PopoverContent>

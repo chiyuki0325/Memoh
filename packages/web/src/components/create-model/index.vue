@@ -3,33 +3,33 @@
     <Dialog v-model:open="open">
       <DialogTrigger as-child>
         <Button variant="default">
-          {{ $t("button.add", { msg: "Model" }) }}
+          {{ $t('models.addModel') }}
         </Button>
       </DialogTrigger>
       <DialogContent class="sm:max-w-106.25">
         <form @submit="addModel">
           <DialogHeader>
             <DialogTitle>
-              {{ title === 'edit' ? '编辑Model' : '添加Model' }}
+              {{ title === 'edit' ? $t('models.editModel') : $t('models.addModel') }}
             </DialogTitle>
             <DialogDescription class="mb-4">
               <Separator class="my-4" />
             </DialogDescription>
           </DialogHeader>
           <div class="flex flex-col gap-3">
-            <!-- 1. Type（先选类型） -->
+            <!-- Type -->
             <FormField
               v-slot="{ componentField }"
               name="type"
             >
               <FormItem>
                 <Label class="mb-2">
-                  Type
+                  {{ $t('models.type') }}
                 </Label>
                 <FormControl>
                   <Select v-bind="componentField">
                     <SelectTrigger class="w-full">
-                      <SelectValue placeholder="选择模型类型" />
+                      <SelectValue :placeholder="$t('models.typePlaceholder')" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -46,46 +46,46 @@
               </FormItem>
             </FormField>
 
-            <!-- 2. Model（原 Model ID） -->
+            <!-- Model -->
             <FormField
               v-slot="{ componentField }"
               name="model_id"
             >
               <FormItem>
                 <Label class="mb-2">
-                  Model
+                  {{ $t('models.model') }}
                 </Label>
                 <FormControl>
                   <Input
                     type="text"
-                    placeholder="e.g. gpt-4o"
+                    :placeholder="$t('models.modelPlaceholder')"
                     v-bind="componentField"
                   />
                 </FormControl>
               </FormItem>
             </FormField>
 
-            <!-- 3. Display Name（可选） -->
+            <!-- Display Name -->
             <FormField
               v-slot="{ componentField }"
               name="name"
             >
               <FormItem>
                 <Label class="mb-2">
-                  Display Name
-                  <span class="text-muted-foreground text-xs ml-1">(optional)</span>
+                  {{ $t('models.displayName') }}
+                  <span class="text-muted-foreground text-xs ml-1">({{ $t('common.optional') }})</span>
                 </Label>
                 <FormControl>
                   <Input
                     type="text"
-                    placeholder="自定义显示名称"
+                    :placeholder="$t('models.displayNamePlaceholder')"
                     v-bind="componentField"
                   />
                 </FormControl>
               </FormItem>
             </FormField>
 
-            <!-- 4. Dimensions（仅 embedding 时显示） -->
+            <!-- Dimensions (embedding only) -->
             <FormField
               v-if="selectedType === 'embedding'"
               v-slot="{ componentField }"
@@ -93,19 +93,19 @@
             >
               <FormItem>
                 <Label class="mb-2">
-                  Dimensions
+                  {{ $t('models.dimensions') }}
                 </Label>
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="e.g. 1536"
+                    :placeholder="$t('models.dimensionsPlaceholder')"
                     v-bind="componentField"
                   />
                 </FormControl>
               </FormItem>
             </FormField>
 
-            <!-- 5. 多模态（仅 chat 时显示） -->
+            <!-- Multimodal (chat only) -->
             <FormField
               v-if="selectedType === 'chat'"
               v-slot="{ componentField }"
@@ -113,7 +113,7 @@
             >
               <FormItem class="flex items-center justify-between">
                 <Label>
-                  是否开启多模态
+                  {{ $t('models.multimodal') }}
                 </Label>
                 <Switch
                   v-model="componentField.modelValue"
@@ -125,7 +125,7 @@
           <DialogFooter class="mt-4">
             <DialogClose as-child>
               <Button variant="outline">
-                Cancel
+                {{ $t('common.cancel') }}
               </Button>
             </DialogClose>
             <Button
@@ -133,7 +133,7 @@
               :disabled="!form.meta.value.valid"
             >
               <Spinner v-if="isLoading" />
-              {{ title === 'edit' ? '保存' : $t("button.add", { msg: "Model" }) }}
+              {{ title === 'edit' ? $t('common.save') : $t('models.addModel') }}
             </Button>
           </DialogFooter>
         </form>
@@ -176,7 +176,7 @@ import { type ModelInfo } from '@memoh/shared'
 import { useCreateModel } from '@/composables/api/useModels'
 
 const formSchema = toTypedSchema(z.object({
-  type: z.string().min(1, '请选择模型类型'),
+  type: z.string().min(1),
   model_id: z.string().min(1),
   name: z.string().optional(),
   dimensions: z.coerce.number().min(1).optional(),

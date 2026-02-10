@@ -17,34 +17,35 @@ const routes = [
     redirect: '/main/chat',
     meta: {
       breadcrumb: i18nRef('breadcrumb.main')
+
     },
     children: [{
       name: 'chat',
       path: 'chat',
       component: () => import('@/pages/chat/index.vue'),
       meta: {
-        breadcrumb: i18nRef('chat.chat')
+        breadcrumb: i18nRef('sidebar.chat')
       }
     }, {
       name: 'home',
       path: 'home',
       component: () => import('@/pages/home/index.vue'),
       meta: {
-        breadcrumb: '主页'
+        breadcrumb: i18nRef('home.title')
       }
     }, {
       name: 'models',
       path: 'models',
       component: () => import('@/pages/models/index.vue'),
       meta: {
-        breadcrumb: i18nRef('slidebar.model_setting')
+        breadcrumb: i18nRef('sidebar.models')
       }
     }, {
       name: 'settings',
       path: 'settings',
       component: () => import('@/pages/settings/index.vue'),
       meta: {
-        breadcrumb: i18nRef('slidebar.setting')
+        breadcrumb: i18nRef('sidebar.settings')
       }
     }, {
       name: 'mcp',
@@ -58,7 +59,7 @@ const routes = [
       path: 'platform',
       component: () => import('@/pages/platform/index.vue'),
       meta: {
-        breadcrumb: i18nRef('slidebar.platform')
+        breadcrumb: i18nRef('sidebar.platform')
       }
     }]
   }

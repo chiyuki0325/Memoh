@@ -70,7 +70,7 @@ const columns:ColumnDef<MCPType>[] = [
   },
   {
     accessorKey: 'control',
-    header: () => h('div', { class: 'text-center' }, '操作'),
+    header: () => h('div', { class: 'text-center' }, i18nRef('common.operation').value),
     cell: ({ row }) => h('div', {class:'flex gap-2'}, [
       h(Button, {
         onClick() {
@@ -82,7 +82,7 @@ const columns:ColumnDef<MCPType>[] = [
           }       
           open.value=true
         }
-      }, ()=>i18nRef('button.edit').value),
+      }, ()=>i18nRef('common.edit').value),
       h(Button, {
         variant: 'destructive',
         async onClick() {        
@@ -92,7 +92,7 @@ const columns:ColumnDef<MCPType>[] = [
             return
           }
         }
-      },()=>i18nRef('button.delete').value)
+      },()=>i18nRef('common.delete').value)
     ])
   }
 ]

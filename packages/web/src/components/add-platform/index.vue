@@ -6,15 +6,15 @@
           variant="default"
           class="ml-auto my-4"
         >
-          添加平台
+          {{ $t('platform.addTitle') }}
         </Button>
       </DialogTrigger>
       <DialogContent class="sm:max-w-106.25">
         <form @submit="addPlatform">
           <DialogHeader>
-            <DialogTitle>添加平台</DialogTitle>
+            <DialogTitle>{{ $t('platform.addTitle') }}</DialogTitle>
             <DialogDescription class="mb-4">
-              为模型添加使用平台
+              {{ $t('platform.addDescription') }}
             </DialogDescription>
           </DialogHeader>
 
@@ -26,12 +26,12 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Name
+                  {{ $t('platform.name') }}
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="text"
-                    placeholder="请输入Name"
+                    :placeholder="$t('platform.namePlaceholder')"
                     v-bind="componentField"
                     autocomplete="name"
                   />
@@ -49,7 +49,7 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  Config
+                  {{ $t('platform.config') }}
                 </FormLabel>
                 <FormControl>
                   <TagsInput
@@ -67,7 +67,7 @@
                       <TagsInputItemDelete />
                     </TagsInputItem>
                     <TagsInputInput
-                      placeholder="key:value 格式"
+                      :placeholder="$t('platform.configPlaceholder')"
                       class="w-full py-1"
                     />
                   </TagsInput>
@@ -85,7 +85,7 @@
             >
               <FormItem>
                 <FormLabel class="mb-2">
-                  是否立即使用
+                  {{ $t('platform.active') }}
                 </FormLabel>
                 <FormControl>
                   <Switch
@@ -103,11 +103,11 @@
           <DialogFooter class="mt-4">
             <DialogClose as-child>
               <Button variant="outline">
-                取消
+                {{ $t('common.cancel') }}
               </Button>
             </DialogClose>
             <Button type="submit">
-              添加平台
+              {{ $t('platform.addTitle') }}
             </Button>
           </DialogFooter>
         </form>

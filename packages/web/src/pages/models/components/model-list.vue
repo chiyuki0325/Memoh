@@ -2,7 +2,7 @@
   <section>
     <section class="flex justify-between items-center mb-4">
       <h4 class="scroll-m-20 font-semibold tracking-tight">
-        模型
+        {{ $t('models.title') }}
       </h4>
       <CreateModel
         v-if="providerId"
@@ -33,8 +33,8 @@
           <FontAwesomeIcon :icon="['far', 'rectangle-list']" />
         </EmptyMedia>
       </EmptyHeader>
-      <EmptyTitle>还没有添加模型</EmptyTitle>
-      <EmptyDescription>请为当前Provider添加模型</EmptyDescription>
+      <EmptyTitle>{{ $t('models.emptyTitle') }}</EmptyTitle>
+      <EmptyDescription>{{ $t('models.emptyDescription') }}</EmptyDescription>
       <EmptyContent />
     </Empty>
   </section>

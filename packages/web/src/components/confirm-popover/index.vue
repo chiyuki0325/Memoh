@@ -13,14 +13,14 @@
             variant="outline"
             @click="close"
           >
-            {{ cancelText }}
+            {{ cancelText || $t('common.cancel') }}
           </Button>
           <Button
             :disabled="loading"
             @click="$emit('confirm'); close()"
           >
             <Spinner v-if="loading" />
-            {{ confirmText }}
+            {{ confirmText || $t('common.confirm') }}
           </Button>
         </div>
       </PopoverContent>
@@ -43,8 +43,8 @@ withDefaults(defineProps<{
   cancelText?: string
   loading?: boolean
 }>(), {
-  confirmText: '确定',
-  cancelText: '取消',
+  confirmText: '',
+  cancelText: '',
   loading: false,
 })
 

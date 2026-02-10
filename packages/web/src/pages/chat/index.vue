@@ -14,14 +14,14 @@
           class="scroll-m-20 text-3xl font-semibold tracking-tight text-center"
           style="font-family: 'Source Han Serif CN', 'Noto Serif SC', 'STSong', 'SimSun', serif;"
         >
-          <TextGenerateEffect words="您好！有什么能帮助您的?" />
+          <TextGenerateEffect :words="$t('chat.greeting')" />
         </h4>
       </section>
 
       <Textarea
         v-model="curInputSay"
         class="pb-16 pt-4"
-        :placeholder="$t('prompt.enter', { msg: $t('desc.question') })"
+        :placeholder="$t('chat.inputPlaceholder')"
       />
 
       <section class="absolute bottom-0 h-14 px-2 inset-x-0 flex items-center">
@@ -32,6 +32,7 @@
         >
           <template v-if="!loading">
             {{ $t('chat.send') }}
+
             <FontAwesomeIcon :icon="['fas', 'paper-plane']" />
           </template>
           <LoadingDots v-else />

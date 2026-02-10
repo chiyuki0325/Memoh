@@ -3,12 +3,12 @@
     <Card>
       <CardHeader>
         <CardTitle class="text-muted-foreground flex justify-between">
-          <span>平台:{{ platform.name }}</span>
+          <span>{{ $t('platform.platformLabel') }}: {{ platform.name }}</span>
           <Badge
             v-if="platform.active"
             variant="outline"
           >
-            运行中...
+            {{ $t('platform.running') }}
           </Badge>
         </CardTitle>
         <CardContent class="mt-4 p-0">
@@ -31,13 +31,13 @@
           class="ml-auto"
           @click="$emit('edit', platform)"
         >
-          编辑
+          {{ $t('common.edit') }}
         </Button>
         <Button
           variant="destructive"
           @click="$emit('delete', platform)"
         >
-          删除
+          {{ $t('common.delete') }}
         </Button>
       </CardFooter>
     </Card>
