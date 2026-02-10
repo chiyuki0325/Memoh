@@ -1,6 +1,4 @@
-import { computed } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import i18n from './i18n'
 import { i18nRef } from './i18n'
 
 const routes = [
@@ -14,7 +12,7 @@ const routes = [
     component: () => import('@/pages/login/index.vue')
   }, {
     name: 'Main',
-    component: () => import('@/pages/mainSection/index.vue'),
+    component: () => import('@/pages/main-section/index.vue'),
     path: '/main',
     redirect: '/main/chat',
     meta: {

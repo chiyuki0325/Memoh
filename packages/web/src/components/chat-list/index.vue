@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import UserChat from './UserChat/index.vue'
-import RobotChat from './RobotChat/index.vue'
+import UserChat from './user-chat/index.vue'
+import RobotChat from './robot-chat/index.vue'
 import { inject, nextTick, ref, watch } from 'vue'
 import { useElementBounding } from '@vueuse/core'
 import { useChatList } from '@/store/chat-list'
