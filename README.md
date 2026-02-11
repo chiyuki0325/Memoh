@@ -15,6 +15,11 @@
     <img src="https://img.shields.io/github/last-commit/memohai/Memoh" alt="Last Commit" />
     <img src="https://img.shields.io/github/issues/memohai/Memoh" alt="Issues" />
   </div>
+  <div align="center">
+    [<a href="https://t.me/memohai">Telegram Group</a>]
+    [<a href="https://docs.memoh.ai">Documentation</a>]
+    [<a href="mailto:business@memoh.net">Cooperation</a>]
+  </div>
   <hr>
 </div>
 
@@ -43,9 +48,23 @@ Memoh Bot can distinguish and remember requests from multiple humans and bots, w
 
 Please refer to the [Roadmap Version 0.1](https://github.com/memohai/Memoh/issues/2) for more details.
 
-## Development
+## Quick Start
 
-Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+### Docker Deployment (Recommended)
+
+The fastest way to deploy Memoh:
+
+```bash
+git clone https://github.com/memohai/Memoh.git
+cd Memoh
+./deploy.sh
+```
+
+Visit http://localhost after deployment. See [Docker Deployment Guide](README_DOCKER.md) for details.
+
+### Development
+
+Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for development setup.
 
 ## Star History
 
@@ -56,8 +75,6 @@ Refer to [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
 <a href="https://github.com/memohai/Memoh/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=memohai/Memoh" />
 </a>
-
----
 
 **LICENSE**: AGPLv3
 
