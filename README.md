@@ -19,6 +19,7 @@
     [<a href="https://t.me/memohai">Telegram Group</a>]
     [<a href="https://docs.memoh.ai">Documentation</a>]
     [<a href="mailto:business@memoh.net">Cooperation</a>]
+  </div>
   <hr>
 </div>
 
