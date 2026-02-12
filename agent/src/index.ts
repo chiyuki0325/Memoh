@@ -19,17 +19,26 @@ export const getBraveConfig = () => {
 }
 
 export const getBaseUrl = () => {
-  let baseUrl = ''
-  if (!baseUrl) {
-    baseUrl = 'http://127.0.0.1'
+  const rawAddr =
+    typeof config.agent_gateway.server_addr === 'string'
+      ? config.agent_gateway.server_addr.trim()
+      : typeof config.server.addr === 'string'
+        ? config.server.addr.trim()
+        : ''
+
+  if (!rawAddr) {
+    return 'http://127.0.0.1'
   }
-  if (
-    typeof config.server.addr === 'string' &&
-    config.server.addr.startsWith(':')
-  ) {
-    baseUrl = `http://127.0.0.1${config.server.addr}`
+
+  if (rawAddr.startsWith('http://') || rawAddr.startsWith('https://')) {
+    return rawAddr.replace(/\/+$/, '')
   }
-  return baseUrl
+
+  if (rawAddr.startsWith(':')) {
+    return `http://127.0.0.1${rawAddr}`
+  }
+
+  return `http://${rawAddr}`
 }
 
 export type AuthFetcher = (
@@ -59,6 +68,9 @@ export const createAuthFetcher = (bearer: string | undefined): AuthFetcher => {
 const app = new Elysia()
   .use(corsMiddleware)
   .use(errorMiddleware)
+  .get('/health', () => ({
+    status: 'ok',
+  }))
   .use(chatModule)
   .listen({
     port: config.agent_gateway.port ?? 8081,
