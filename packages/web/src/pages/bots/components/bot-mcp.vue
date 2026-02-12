@@ -572,7 +572,7 @@ async function handleImport() {
       parsed = { mcpServers: parsed }
     }
     await client.put({
-      url: `/bots/${props.botId}/mcp/import`,
+      url: `/bots/${props.botId}/mcp-ops/import`,
       body: parsed,
       throwOnError: true,
     })
@@ -590,7 +590,7 @@ async function handleImport() {
 async function handleExport() {
   try {
     const { data } = await client.get({
-      url: `/bots/${props.botId}/mcp/export`,
+      url: `/bots/${props.botId}/mcp-ops/export`,
       throwOnError: true,
     }) as { data: { mcpServers: Record<string, unknown> } }
     exportJson.value = JSON.stringify(data, null, 2)

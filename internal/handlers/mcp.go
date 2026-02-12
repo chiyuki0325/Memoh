@@ -35,11 +35,13 @@ func (h *MCPHandler) Register(e *echo.Echo) {
 	group := e.Group("/bots/:bot_id/mcp")
 	group.GET("", h.List)
 	group.POST("", h.Create)
-	group.PUT("/import", h.Import)
-	group.GET("/export", h.Export)
 	group.GET("/:id", h.Get)
 	group.PUT("/:id", h.Update)
 	group.DELETE("/:id", h.Delete)
+
+	ops := e.Group("/bots/:bot_id/mcp-ops")
+	ops.PUT("/import", h.Import)
+	ops.GET("/export", h.Export)
 }
 
 // List godoc
