@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
@@ -419,6 +420,7 @@ func sendTelegramText(bot *tgbotapi.BotAPI, target string, text string, replyTo 
 
 // sendTelegramTextReturnMessage sends a text message and returns the chat ID and message ID for later editing.
 func sendTelegramTextReturnMessage(bot *tgbotapi.BotAPI, target string, text string, replyTo int, parseMode string) (chatID int64, messageID int, err error) {
+	text = sanitizeTelegramText(text)
 	var sent tgbotapi.Message
 	if strings.HasPrefix(target, "@") {
 		message := tgbotapi.NewMessageToChannel(target, text)
@@ -457,6 +459,7 @@ var sendEditForTest func(bot *tgbotapi.BotAPI, edit tgbotapi.EditMessageTextConf
 // editTelegramMessageText sends an edit request. It handles "message is not modified"
 // silently but returns 429 and other errors to the caller for higher-level retry decisions.
 func editTelegramMessageText(bot *tgbotapi.BotAPI, chatID int64, messageID int, text string, parseMode string) error {
+	text = sanitizeTelegramText(text)
 	if len(text) > telegramMaxMessageLength {
 		text = text[:telegramMaxMessageLength-3] + "..."
 	}
@@ -812,4 +815,14 @@ func pickTelegramPhoto(items []tgbotapi.PhotoSize) tgbotapi.PhotoSize {
 		}
 	}
 	return best
+}
+
+// sanitizeTelegramText ensures text is valid UTF-8 for the Telegram API.
+// Strips invalid byte sequences and trailing incomplete multi-byte characters
+// that may occur at streaming chunk boundaries.
+func sanitizeTelegramText(text string) string {
+	if utf8.ValidString(text) {
+		return text
+	}
+	return strings.ToValidUTF8(text, "")
 }
