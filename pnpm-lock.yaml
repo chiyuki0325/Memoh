@@ -162,8 +162,6 @@ importers:
         specifier: '>=0.21.0'
         version: 0.21.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))(vue@3.5.26(typescript@5.9.3))
 
-  packages/shared: {}
-
   packages/ui:
     dependencies:
       '@tailwindcss/vite':

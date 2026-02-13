@@ -51,7 +51,7 @@
               </div>
               <div class="text-xs">
                 <span
-                  v-if="item.config?.status === 'active'"
+                  v-if="item.config?.status === 'active' || item.config?.status === 'verified'"
                   class="text-green-600 dark:text-green-400"
                 >
                   {{ $t('bots.channels.statusActive') }}

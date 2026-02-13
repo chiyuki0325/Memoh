@@ -293,46 +293,46 @@ definitions:
     type: object
   channel.ChannelConfig:
     properties:
-      botID:
+      bot_id:
         type: string
-      channelType:
+      channel_type:
         type: string
-      createdAt:
+      created_at:
         type: string
       credentials:
         additionalProperties: {}
         type: object
-      externalIdentity:
+      external_identity:
         type: string
       id:
         type: string
       routing:
         additionalProperties: {}
         type: object
-      selfIdentity:
+      self_identity:
         additionalProperties: {}
         type: object
       status:
         type: string
-      updatedAt:
+      updated_at:
         type: string
-      verifiedAt:
+      verified_at:
         type: string
     type: object
   channel.ChannelIdentityBinding:
     properties:
-      channelIdentityID:
+      channel_identity_id:
         type: string
-      channelType:
+      channel_type:
         type: string
       config:
         additionalProperties: {}
         type: object
-      createdAt:
+      created_at:
         type: string
       id:
         type: string
-      updatedAt:
+      updated_at:
         type: string
     type: object
   channel.ConfigSchema:
@@ -839,6 +839,8 @@ definitions:
         type: object
       limit:
         type: integer
+      no_stats:
+        type: boolean
       query:
         type: string
       run_id:
@@ -946,6 +948,15 @@ definitions:
       url:
         type: string
     type: object
+  memory.CDFPoint:
+    properties:
+      cumulative:
+        description: cumulative weight fraction [0.0, 1.0]
+        type: number
+      k:
+        description: rank position (1-based, sorted by value desc)
+        type: integer
+    type: object
   memory.CompactResult:
     properties:
       after_count:
@@ -970,6 +981,10 @@ definitions:
         type: string
       bot_id:
         type: string
+      cdf_curve:
+        items:
+          $ref: '#/definitions/memory.CDFPoint'
+        type: array
       created_at:
         type: string
       hash:
@@ -985,6 +1000,10 @@ definitions:
         type: string
       score:
         type: number
+      top_k_buckets:
+        items:
+          $ref: '#/definitions/memory.TopKBucket'
+        type: array
       updated_at:
         type: string
     type: object
@@ -1016,6 +1035,15 @@ definitions:
           $ref: '#/definitions/memory.MemoryItem'
         type: array
     type: object
+  memory.TopKBucket:
+    properties:
+      index:
+        description: sparse dimension index (term hash)
+        type: integer
+      value:
+        description: weight (term frequency)
+        type: number
+    type: object
   memory.UsageResponse:
     properties:
       avg_text_bytes:
@@ -1026,6 +1054,40 @@ definitions:
         type: integer
       total_text_bytes:
         type: integer
+    type: object
+  message.Message:
+    properties:
+      bot_id:
+        type: string
+      content:
+        items:
+          type: integer
+        type: array
+      created_at:
+        type: string
+      external_message_id:
+        type: string
+      id:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      platform:
+        type: string
+      role:
+        type: string
+      route_id:
+        type: string
+      sender_avatar_url:
+        type: string
+      sender_channel_identity_id:
+        type: string
+      sender_display_name:
+        type: string
+      sender_user_id:
+        type: string
+      source_reply_to_message_id:
+        type: string
     type: object
   models.AddRequest:
     properties:
@@ -2118,6 +2180,11 @@ paths:
         name: bot_id
         required: true
         type: string
+      - description: Skip sparse vector stats (top_k_buckets, cdf_curve) to reduce
+          overhead
+        in: query
+        name: no_stats
+        type: boolean
       produces:
       - application/json
       responses:
@@ -2395,6 +2462,49 @@ paths:
       summary: Get memory usage
       tags:
       - memory
+  /bots/{bot_id}/messages:
+    get:
+      description: List messages for a bot history with optional pagination
+      parameters:
+      - description: Bot ID
+        in: path
+        name: bot_id
+        required: true
+        type: string
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Before
+        in: query
+        name: before
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/message.Message'
+              type: array
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: List bot history messages
+      tags:
+      - messages
   /bots/{bot_id}/schedule:
     get:
       description: List schedules for current user

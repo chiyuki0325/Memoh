@@ -53,6 +53,7 @@ export type AccountsUpdateProfileRequest = {
 };
 
 export type BotsBot = {
+    allow_guest?: boolean;
     avatar_url?: string;
     check_issue_count?: number;
     check_state?: string;
@@ -98,6 +99,10 @@ export type BotsCreateBotRequest = {
 
 export type BotsListBotsResponse = {
     items?: Array<BotsBot>;
+};
+
+export type BotsListCheckKeysResponse = {
+    keys?: Array<string>;
 };
 
 export type BotsListChecksResponse = {
@@ -173,34 +178,34 @@ export type ChannelChannelCapabilities = {
 };
 
 export type ChannelChannelConfig = {
-    botID?: string;
-    channelType?: string;
-    createdAt?: string;
+    bot_id?: string;
+    channel_type?: string;
+    created_at?: string;
     credentials?: {
         [key: string]: unknown;
     };
-    externalIdentity?: string;
+    external_identity?: string;
     id?: string;
     routing?: {
         [key: string]: unknown;
     };
-    selfIdentity?: {
+    self_identity?: {
         [key: string]: unknown;
     };
     status?: string;
-    updatedAt?: string;
-    verifiedAt?: string;
+    updated_at?: string;
+    verified_at?: string;
 };
 
 export type ChannelChannelIdentityBinding = {
-    channelIdentityID?: string;
-    channelType?: string;
+    channel_identity_id?: string;
+    channel_type?: string;
     config?: {
         [key: string]: unknown;
     };
-    createdAt?: string;
+    created_at?: string;
     id?: string;
-    updatedAt?: string;
+    updated_at?: string;
 };
 
 export type ChannelConfigSchema = {
@@ -301,16 +306,20 @@ export type ChannelUpsertConfigRequest = {
 };
 
 export type GithubComMemohaiMemohInternalMcpConnection = {
-    active?: boolean;
     bot_id?: string;
     config?: {
         [key: string]: unknown;
     };
     created_at?: string;
     id?: string;
+    is_active?: boolean;
     name?: string;
     type?: string;
     updated_at?: string;
+};
+
+export type HandlersBatchDeleteRequest = {
+    ids?: Array<string>;
 };
 
 export type HandlersChannelMeta = {
@@ -369,9 +378,9 @@ export type HandlersEmbeddingsResponse = {
 };
 
 export type HandlersEmbeddingsUsage = {
+    duration?: number;
     image_tokens?: number;
     input_tokens?: number;
-    video_tokens?: number;
 };
 
 export type HandlersErrorResponse = {
@@ -464,6 +473,41 @@ export type HandlersListMyIdentitiesResponse = {
     user_id?: string;
 };
 
+export type HandlersMemoryAddPayload = {
+    embedding_enabled?: boolean;
+    filters?: {
+        [key: string]: unknown;
+    };
+    infer?: boolean;
+    message?: string;
+    messages?: Array<MemoryMessage>;
+    metadata?: {
+        [key: string]: unknown;
+    };
+    namespace?: string;
+    run_id?: string;
+};
+
+export type HandlersMemoryCompactPayload = {
+    decay_days?: number;
+    ratio?: number;
+};
+
+export type HandlersMemoryDeletePayload = {
+    memory_ids?: Array<string>;
+};
+
+export type HandlersMemorySearchPayload = {
+    embedding_enabled?: boolean;
+    filters?: {
+        [key: string]: unknown;
+    };
+    limit?: number;
+    query?: string;
+    run_id?: string;
+    sources?: Array<string>;
+};
+
 export type HandlersSkillsOpResponse = {
     ok?: boolean;
 };
@@ -482,17 +526,143 @@ export type IdentitiesChannelIdentity = {
     user_id?: string;
 };
 
+export type McpExportResponse = {
+    mcpServers?: {
+        [key: string]: McpMcpServerEntry;
+    };
+};
+
+export type McpImportRequest = {
+    mcpServers?: {
+        [key: string]: McpMcpServerEntry;
+    };
+};
+
 export type McpListResponse = {
     items?: Array<GithubComMemohaiMemohInternalMcpConnection>;
 };
 
+export type McpMcpServerEntry = {
+    args?: Array<string>;
+    command?: string;
+    cwd?: string;
+    env?: {
+        [key: string]: string;
+    };
+    headers?: {
+        [key: string]: string;
+    };
+    transport?: string;
+    url?: string;
+};
+
 export type McpUpsertRequest = {
-    active?: boolean;
-    config?: {
+    args?: Array<string>;
+    command?: string;
+    cwd?: string;
+    env?: {
+        [key: string]: string;
+    };
+    headers?: {
+        [key: string]: string;
+    };
+    is_active?: boolean;
+    name?: string;
+    transport?: string;
+    url?: string;
+};
+
+export type MemoryCdfPoint = {
+    /**
+     * cumulative weight fraction [0.0, 1.0]
+     */
+    cumulative?: number;
+    /**
+     * rank position (1-based, sorted by value desc)
+     */
+    k?: number;
+};
+
+export type MemoryCompactResult = {
+    after_count?: number;
+    before_count?: number;
+    ratio?: number;
+    results?: Array<MemoryMemoryItem>;
+};
+
+export type MemoryDeleteResponse = {
+    message?: string;
+};
+
+export type MemoryMemoryItem = {
+    agent_id?: string;
+    bot_id?: string;
+    created_at?: string;
+    hash?: string;
+    id?: string;
+    memory?: string;
+    metadata?: {
         [key: string]: unknown;
     };
-    name?: string;
-    type?: string;
+    run_id?: string;
+    score?: number;
+    updated_at?: string;
+};
+
+export type MemoryMessage = {
+    content?: string;
+    role?: string;
+};
+
+export type MemoryRebuildResult = {
+    fs_count?: number;
+    missing_count?: number;
+    qdrant_count?: number;
+    restored_count?: number;
+};
+
+export type MemorySearchResponse = {
+    cdf_curve?: Array<MemoryCdfPoint>;
+    relations?: Array<unknown>;
+    results?: Array<MemoryMemoryItem>;
+    top_k_buckets?: Array<MemoryTopKBucket>;
+};
+
+export type MemoryTopKBucket = {
+    /**
+     * sparse dimension index (term hash)
+     */
+    index?: number;
+    /**
+     * weight (term frequency)
+     */
+    value?: number;
+};
+
+export type MemoryUsageResponse = {
+    avg_text_bytes?: number;
+    count?: number;
+    estimated_storage_bytes?: number;
+    total_text_bytes?: number;
+};
+
+export type MessageMessage = {
+    bot_id?: string;
+    content?: Array<number>;
+    created_at?: string;
+    external_message_id?: string;
+    id?: string;
+    metadata?: {
+        [key: string]: unknown;
+    };
+    platform?: string;
+    role?: string;
+    route_id?: string;
+    sender_avatar_url?: string;
+    sender_channel_identity_id?: string;
+    sender_display_name?: string;
+    sender_user_id?: string;
+    source_reply_to_message_id?: string;
 };
 
 export type ModelsAddRequest = {
@@ -1248,6 +1418,40 @@ export type PostBotsByBotIdMcpResponses = {
 
 export type PostBotsByBotIdMcpResponse = PostBotsByBotIdMcpResponses[keyof PostBotsByBotIdMcpResponses];
 
+export type PostBotsByBotIdMcpOpsBatchDeleteData = {
+    /**
+     * IDs to delete
+     */
+    body: HandlersBatchDeleteRequest;
+    path?: never;
+    query?: never;
+    url: '/bots/{bot_id}/mcp-ops/batch-delete';
+};
+
+export type PostBotsByBotIdMcpOpsBatchDeleteErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+};
+
+export type PostBotsByBotIdMcpOpsBatchDeleteError = PostBotsByBotIdMcpOpsBatchDeleteErrors[keyof PostBotsByBotIdMcpOpsBatchDeleteErrors];
+
+export type PostBotsByBotIdMcpOpsBatchDeleteResponses = {
+    /**
+     * No Content
+     */
+    204: unknown;
+};
+
 export type PostBotsByBotIdMcpStdioData = {
     /**
      * Stdio MCP payload
@@ -1337,6 +1541,75 @@ export type PostBotsByBotIdMcpStdioByConnectionIdResponses = {
 };
 
 export type PostBotsByBotIdMcpStdioByConnectionIdResponse = PostBotsByBotIdMcpStdioByConnectionIdResponses[keyof PostBotsByBotIdMcpStdioByConnectionIdResponses];
+
+export type GetBotsByBotIdMcpExportData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/bots/{bot_id}/mcp/export';
+};
+
+export type GetBotsByBotIdMcpExportErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+};
+
+export type GetBotsByBotIdMcpExportError = GetBotsByBotIdMcpExportErrors[keyof GetBotsByBotIdMcpExportErrors];
+
+export type GetBotsByBotIdMcpExportResponses = {
+    /**
+     * OK
+     */
+    200: McpExportResponse;
+};
+
+export type GetBotsByBotIdMcpExportResponse = GetBotsByBotIdMcpExportResponses[keyof GetBotsByBotIdMcpExportResponses];
+
+export type PutBotsByBotIdMcpImportData = {
+    /**
+     * mcpServers dict
+     */
+    body: McpImportRequest;
+    path?: never;
+    query?: never;
+    url: '/bots/{bot_id}/mcp/import';
+};
+
+export type PutBotsByBotIdMcpImportErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+};
+
+export type PutBotsByBotIdMcpImportError = PutBotsByBotIdMcpImportErrors[keyof PutBotsByBotIdMcpImportErrors];
+
+export type PutBotsByBotIdMcpImportResponses = {
+    /**
+     * OK
+     */
+    200: McpListResponse;
+};
+
+export type PutBotsByBotIdMcpImportResponse = PutBotsByBotIdMcpImportResponses[keyof PutBotsByBotIdMcpImportResponses];
 
 export type DeleteBotsByBotIdMcpByIdData = {
     body?: never;
@@ -1464,6 +1737,411 @@ export type PutBotsByBotIdMcpByIdResponses = {
 };
 
 export type PutBotsByBotIdMcpByIdResponse = PutBotsByBotIdMcpByIdResponses[keyof PutBotsByBotIdMcpByIdResponses];
+
+export type DeleteBotsByBotIdMemoryData = {
+    /**
+     * Optional: specify memory_ids to delete; if omitted, deletes all
+     */
+    body?: HandlersMemoryDeletePayload;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory';
+};
+
+export type DeleteBotsByBotIdMemoryErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type DeleteBotsByBotIdMemoryError = DeleteBotsByBotIdMemoryErrors[keyof DeleteBotsByBotIdMemoryErrors];
+
+export type DeleteBotsByBotIdMemoryResponses = {
+    /**
+     * OK
+     */
+    200: MemoryDeleteResponse;
+};
+
+export type DeleteBotsByBotIdMemoryResponse = DeleteBotsByBotIdMemoryResponses[keyof DeleteBotsByBotIdMemoryResponses];
+
+export type GetBotsByBotIdMemoryData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory';
+};
+
+export type GetBotsByBotIdMemoryErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type GetBotsByBotIdMemoryError = GetBotsByBotIdMemoryErrors[keyof GetBotsByBotIdMemoryErrors];
+
+export type GetBotsByBotIdMemoryResponses = {
+    /**
+     * OK
+     */
+    200: MemorySearchResponse;
+};
+
+export type GetBotsByBotIdMemoryResponse = GetBotsByBotIdMemoryResponses[keyof GetBotsByBotIdMemoryResponses];
+
+export type PostBotsByBotIdMemoryData = {
+    /**
+     * Memory add payload
+     */
+    body: HandlersMemoryAddPayload;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory';
+};
+
+export type PostBotsByBotIdMemoryErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type PostBotsByBotIdMemoryError = PostBotsByBotIdMemoryErrors[keyof PostBotsByBotIdMemoryErrors];
+
+export type PostBotsByBotIdMemoryResponses = {
+    /**
+     * OK
+     */
+    200: MemorySearchResponse;
+};
+
+export type PostBotsByBotIdMemoryResponse = PostBotsByBotIdMemoryResponses[keyof PostBotsByBotIdMemoryResponses];
+
+export type PostBotsByBotIdMemoryCompactData = {
+    /**
+     * ratio (0,1] required; decay_days optional
+     */
+    body: HandlersMemoryCompactPayload;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory/compact';
+};
+
+export type PostBotsByBotIdMemoryCompactErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type PostBotsByBotIdMemoryCompactError = PostBotsByBotIdMemoryCompactErrors[keyof PostBotsByBotIdMemoryCompactErrors];
+
+export type PostBotsByBotIdMemoryCompactResponses = {
+    /**
+     * OK
+     */
+    200: MemoryCompactResult;
+};
+
+export type PostBotsByBotIdMemoryCompactResponse = PostBotsByBotIdMemoryCompactResponses[keyof PostBotsByBotIdMemoryCompactResponses];
+
+export type PostBotsByBotIdMemoryRebuildData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory/rebuild';
+};
+
+export type PostBotsByBotIdMemoryRebuildErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type PostBotsByBotIdMemoryRebuildError = PostBotsByBotIdMemoryRebuildErrors[keyof PostBotsByBotIdMemoryRebuildErrors];
+
+export type PostBotsByBotIdMemoryRebuildResponses = {
+    /**
+     * OK
+     */
+    200: MemoryRebuildResult;
+};
+
+export type PostBotsByBotIdMemoryRebuildResponse = PostBotsByBotIdMemoryRebuildResponses[keyof PostBotsByBotIdMemoryRebuildResponses];
+
+export type PostBotsByBotIdMemorySearchData = {
+    /**
+     * Memory search payload
+     */
+    body: HandlersMemorySearchPayload;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory/search';
+};
+
+export type PostBotsByBotIdMemorySearchErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Not Found
+     */
+    404: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type PostBotsByBotIdMemorySearchError = PostBotsByBotIdMemorySearchErrors[keyof PostBotsByBotIdMemorySearchErrors];
+
+export type PostBotsByBotIdMemorySearchResponses = {
+    /**
+     * OK
+     */
+    200: MemorySearchResponse;
+};
+
+export type PostBotsByBotIdMemorySearchResponse = PostBotsByBotIdMemorySearchResponses[keyof PostBotsByBotIdMemorySearchResponses];
+
+export type GetBotsByBotIdMemoryUsageData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory/usage';
+};
+
+export type GetBotsByBotIdMemoryUsageErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type GetBotsByBotIdMemoryUsageError = GetBotsByBotIdMemoryUsageErrors[keyof GetBotsByBotIdMemoryUsageErrors];
+
+export type GetBotsByBotIdMemoryUsageResponses = {
+    /**
+     * OK
+     */
+    200: MemoryUsageResponse;
+};
+
+export type GetBotsByBotIdMemoryUsageResponse = GetBotsByBotIdMemoryUsageResponses[keyof GetBotsByBotIdMemoryUsageResponses];
+
+export type DeleteBotsByBotIdMemoryByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+        /**
+         * Memory ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/bots/{bot_id}/memory/{id}';
+};
+
+export type DeleteBotsByBotIdMemoryByIdErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+    /**
+     * Service Unavailable
+     */
+    503: HandlersErrorResponse;
+};
+
+export type DeleteBotsByBotIdMemoryByIdError = DeleteBotsByBotIdMemoryByIdErrors[keyof DeleteBotsByBotIdMemoryByIdErrors];
+
+export type DeleteBotsByBotIdMemoryByIdResponses = {
+    /**
+     * OK
+     */
+    200: MemoryDeleteResponse;
+};
+
+export type DeleteBotsByBotIdMemoryByIdResponse = DeleteBotsByBotIdMemoryByIdResponses[keyof DeleteBotsByBotIdMemoryByIdResponses];
+
+export type GetBotsByBotIdMessagesData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        bot_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Before
+         */
+        before?: string;
+    };
+    url: '/bots/{bot_id}/messages';
+};
+
+export type GetBotsByBotIdMessagesErrors = {
+    /**
+     * Bad Request
+     */
+    400: HandlersErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: HandlersErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: HandlersErrorResponse;
+};
+
+export type GetBotsByBotIdMessagesError = GetBotsByBotIdMessagesErrors[keyof GetBotsByBotIdMessagesErrors];
+
+export type GetBotsByBotIdMessagesResponses = {
+    /**
+     * OK
+     */
+    200: {
+        [key: string]: Array<MessageMessage>;
+    };
+};
+
+export type GetBotsByBotIdMessagesResponse = GetBotsByBotIdMessagesResponses[keyof GetBotsByBotIdMessagesResponses];
 
 export type GetBotsByBotIdScheduleData = {
     body?: never;
@@ -2542,6 +3220,52 @@ export type GetBotsByIdChecksResponses = {
 };
 
 export type GetBotsByIdChecksResponse = GetBotsByIdChecksResponses[keyof GetBotsByIdChecksResponses];
+
+export type GetBotsByIdChecksKeysData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/bots/{id}/checks/keys';
+};
+
+export type GetBotsByIdChecksKeysResponses = {
+    /**
+     * OK
+     */
+    200: BotsListCheckKeysResponse;
+};
+
+export type GetBotsByIdChecksKeysResponse = GetBotsByIdChecksKeysResponses[keyof GetBotsByIdChecksKeysResponses];
+
+export type GetBotsByIdChecksRunByKeyData = {
+    body?: never;
+    path: {
+        /**
+         * Bot ID
+         */
+        id: string;
+        /**
+         * Check key
+         */
+        key: string;
+    };
+    query?: never;
+    url: '/bots/{id}/checks/run/{key}';
+};
+
+export type GetBotsByIdChecksRunByKeyResponses = {
+    /**
+     * OK
+     */
+    200: BotsBotCheck;
+};
+
+export type GetBotsByIdChecksRunByKeyResponse = GetBotsByIdChecksRunByKeyResponses[keyof GetBotsByIdChecksRunByKeyResponses];
 
 export type GetBotsByIdMembersData = {
     body?: never;

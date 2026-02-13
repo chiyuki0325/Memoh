@@ -654,6 +654,7 @@ func (r *Resolver) loadMemoryContextMessage(ctx context.Context, req conversatio
 			"scopeId":   req.BotID,
 			"bot_id":    req.BotID,
 		},
+		NoStats: true,
 	})
 	if err != nil {
 		r.logger.Warn("memory search for context failed",

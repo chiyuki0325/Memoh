@@ -226,7 +226,7 @@
         value="memory"
         class="mt-6"
       >
-        <!-- TODO: Memory content -->
+        <BotMemory :bot-id="botId" />
       </TabsContent>
       <TabsContent
         value="channels"
@@ -546,8 +546,8 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@memoh/ui'
-import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { useI18n } from 'vue-i18n'
 import { useQuery, useMutation, useQueryCache } from '@pinia/colada'
@@ -566,12 +566,14 @@ import ConfirmPopover from '@/components/confirm-popover/index.vue'
 import BotSettings from './components/bot-settings.vue'
 import BotChannels from './components/bot-channels.vue'
 import BotMcp from './components/bot-mcp.vue'
+import BotMemory from './components/bot-memory.vue'
 
 type BotCheck = BotsBotCheck
 type BotContainerInfo = HandlersGetContainerResponse
 type BotContainerSnapshot = HandlersListSnapshotsResponse extends { snapshots?: (infer T)[] } ? T : never
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const botId = computed(() => route.params.botId as string)
 
@@ -624,7 +626,21 @@ watch(bot, (val) => {
   }
 }, { immediate: true })
 
-const activeTab = ref('overview')
+const activeTab = ref((route.query.tab as string) || 'overview')
+
+// Sync tab to URL
+watch(activeTab, (val) => {
+  if (val !== route.query.tab) {
+    router.push({ query: { ...route.query, tab: val } })
+  }
+})
+
+// Sync URL to tab (e.g. on back button)
+watch(() => route.query.tab, (val) => {
+  if (val && val !== activeTab.value) {
+    activeTab.value = val as string
+  }
+})
 const isEditingBotName = ref(false)
 const botNameDraft = ref('')
 const avatarDialogOpen = ref(false)

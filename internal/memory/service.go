@@ -231,8 +231,9 @@ func (s *Service) Search(ctx context.Context, req SearchRequest) (SearchResponse
 		return SearchResponse{}, err
 	}
 	indices, values := s.bm25.BuildQueryVector(lang, termFreq)
+	wantStats := !req.NoStats
 	if len(req.Sources) == 0 {
-		points, scores, err := s.store.SearchSparse(ctx, indices, values, req.Limit, filters)
+		points, scores, err := s.store.SearchSparse(ctx, indices, values, req.Limit, filters, wantStats)
 		if err != nil {
 			return SearchResponse{}, err
 		}
@@ -242,15 +243,37 @@ func (s *Service) Search(ctx context.Context, req SearchRequest) (SearchResponse
 			if idx < len(scores) {
 				item.Score = scores[idx]
 			}
+			if wantStats {
+				item.TopKBuckets, item.CDFCurve = computeSparseVectorStats(point.SparseIndices, point.SparseValues)
+			}
 			results = append(results, item)
 		}
 		return SearchResponse{Results: results}, nil
 	}
-	pointsBySource, scoresBySource, err := s.store.SearchSparseBySources(ctx, indices, values, req.Limit, filters, req.Sources)
+	pointsBySource, scoresBySource, err := s.store.SearchSparseBySources(ctx, indices, values, req.Limit, filters, req.Sources, wantStats)
 	if err != nil {
 		return SearchResponse{}, err
 	}
+	// Build sparse vector lookup before fusion (fusion discards raw points).
+	var sparseByID map[string]qdrantPoint
+	if wantStats {
+		sparseByID = make(map[string]qdrantPoint)
+		for _, pts := range pointsBySource {
+			for _, p := range pts {
+				if len(p.SparseIndices) > 0 {
+					sparseByID[p.ID] = p
+				}
+			}
+		}
+	}
 	results := fuseByRankFusion(pointsBySource, scoresBySource)
+	if wantStats {
+		for i := range results {
+			if p, ok := sparseByID[results[i].ID]; ok {
+				results[i].TopKBuckets, results[i].CDFCurve = computeSparseVectorStats(p.SparseIndices, p.SparseValues)
+			}
+		}
+	}
 	return SearchResponse{Results: results}, nil
 }
 
@@ -428,13 +451,18 @@ func (s *Service) GetAll(ctx context.Context, req GetAllRequest) (SearchResponse
 		return SearchResponse{}, fmt.Errorf("bot_id, agent_id or run_id is required")
 	}
 
-	points, err := s.store.List(ctx, req.Limit, filters)
+	wantStats := !req.NoStats
+	points, err := s.store.List(ctx, req.Limit, filters, wantStats)
 	if err != nil {
 		return SearchResponse{}, err
 	}
 	results := make([]MemoryItem, 0, len(points))
 	for _, point := range points {
-		results = append(results, payloadToMemoryItem(point.ID, point.Payload))
+		item := payloadToMemoryItem(point.ID, point.Payload)
+		if wantStats {
+			item.TopKBuckets, item.CDFCurve = computeSparseVectorStats(point.SparseIndices, point.SparseValues)
+		}
+		results = append(results, item)
 	}
 	return SearchResponse{Results: results}, nil
 }
@@ -504,7 +532,7 @@ func (s *Service) Compact(ctx context.Context, filters map[string]any, ratio flo
 	}
 
 	// Fetch all existing memories.
-	points, err := s.store.List(ctx, 0, filters)
+	points, err := s.store.List(ctx, 0, filters, false)
 	if err != nil {
 		return CompactResult{}, err
 	}
@@ -605,7 +633,7 @@ func (s *Service) Usage(ctx context.Context, filters map[string]any) (UsageRespo
 	if s.store == nil {
 		return UsageResponse{}, fmt.Errorf("qdrant store not configured")
 	}
-	points, err := s.store.List(ctx, 0, filters)
+	points, err := s.store.List(ctx, 0, filters, false)
 	if err != nil {
 		return UsageResponse{}, err
 	}
@@ -695,7 +723,7 @@ func (s *Service) collectCandidates(ctx context.Context, facts []string, filters
 			return nil, err
 		}
 		indices, values := s.bm25.BuildQueryVector(lang, termFreq)
-		points, _, err := s.store.SearchSparse(ctx, indices, values, 5, filters)
+		points, _, err := s.store.SearchSparse(ctx, indices, values, 5, filters, false)
 		if err != nil {
 			return nil, err
 		}
@@ -1145,6 +1173,48 @@ func mergeMetadata(base any, extra map[string]any) map[string]any {
 		merged[k] = v
 	}
 	return merged
+}
+
+// computeSparseVectorStats derives Top-K Bucket bar chart data and a CDF
+// (cumulative contribution curve) from a sparse vector's indices and values.
+func computeSparseVectorStats(indices []uint32, values []float32) ([]TopKBucket, []CDFPoint) {
+	n := len(indices)
+	if n == 0 || len(values) == 0 {
+		return nil, nil
+	}
+	if len(values) < n {
+		n = len(values)
+	}
+
+	// Build paired buckets and compute total weight in one pass.
+	buckets := make([]TopKBucket, n)
+	var totalWeight float64
+	for i := 0; i < n; i++ {
+		buckets[i] = TopKBucket{Index: indices[i], Value: values[i]}
+		totalWeight += float64(values[i])
+	}
+
+	// Sort by value descending.
+	sort.Slice(buckets, func(i, j int) bool {
+		return buckets[i].Value > buckets[j].Value
+	})
+
+	// Build CDF curve.
+	cdf := make([]CDFPoint, n)
+	var cumulative float64
+	for k := 0; k < n; k++ {
+		cumulative += float64(buckets[k].Value)
+		fraction := cumulative / totalWeight
+		if fraction > 1.0 {
+			fraction = 1.0
+		}
+		cdf[k] = CDFPoint{
+			K:          k + 1,
+			Cumulative: math.Round(fraction*10000) / 10000, // 4 decimal places
+		}
+	}
+
+	return buckets, cdf
 }
 
 type rerankCandidate struct {

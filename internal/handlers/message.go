@@ -262,9 +262,19 @@ func parseSinceParam(raw string) (time.Time, bool, error) {
 	return time.Time{}, false, fmt.Errorf("invalid since parameter")
 }
 
-// ListMessages lists messages for a conversation with optional pagination.
-// Query: limit (default 30), before (optional ISO8601 or unix ms) for older messages.
-// Returns items in ascending created_at order (oldest first).
+// ListMessages godoc
+// @Summary List bot history messages
+// @Description List messages for a bot history with optional pagination
+// @Tags messages
+// @Produce json
+// @Param bot_id path string true "Bot ID"
+// @Param limit query int false "Limit"
+// @Param before query string false "Before"
+// @Success 200 {object} map[string][]messagepkg.Message
+// @Failure 400 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /bots/{bot_id}/messages [get]
 func (h *MessageHandler) ListMessages(c echo.Context) error {
 	channelIdentityID, err := h.requireChannelIdentityID(c)
 	if err != nil {

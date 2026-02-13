@@ -4,8 +4,8 @@ import { type _JSONValue, defineQueryOptions, type UseMutationOptions } from '@p
 
 import { serializeQueryKeyValue } from '../client';
 import { client } from '../client.gen';
-import { deleteBotsByBotIdContainer, deleteBotsByBotIdContainerSkills, deleteBotsByBotIdMcpById, deleteBotsByBotIdScheduleById, deleteBotsByBotIdSettings, deleteBotsByBotIdSubagentsById, deleteBotsById, deleteBotsByIdMembersByUserId, deleteModelsById, deleteModelsModelByModelId, deleteProvidersById, getBots, getBotsByBotIdContainer, getBotsByBotIdContainerSkills, getBotsByBotIdContainerSnapshots, getBotsByBotIdMcp, getBotsByBotIdMcpById, getBotsByBotIdSchedule, getBotsByBotIdScheduleById, getBotsByBotIdSettings, getBotsByBotIdSubagents, getBotsByBotIdSubagentsById, getBotsByBotIdSubagentsByIdContext, getBotsByBotIdSubagentsByIdSkills, getBotsById, getBotsByIdChannelByPlatform, getBotsByIdChecks, getBotsByIdMembers, getChannels, getChannelsByPlatform, getModels, getModelsById, getModelsCount, getModelsModelByModelId, getProviders, getProvidersById, getProvidersByIdModels, getProvidersCount, getProvidersNameByName, getUsers, getUsersById, getUsersMe, getUsersMeChannelsByPlatform, getUsersMeIdentities, type Options, postAuthLogin, postBots, postBotsByBotIdContainer, postBotsByBotIdContainerSkills, postBotsByBotIdContainerSnapshots, postBotsByBotIdContainerStart, postBotsByBotIdContainerStop, postBotsByBotIdMcp, postBotsByBotIdMcpStdio, postBotsByBotIdMcpStdioByConnectionId, postBotsByBotIdSchedule, postBotsByBotIdSettings, postBotsByBotIdSubagents, postBotsByBotIdSubagentsByIdSkills, postBotsByBotIdTools, postBotsByIdChannelByPlatformSend, postBotsByIdChannelByPlatformSendChat, postEmbeddings, postModels, postProviders, postUsers, putBotsByBotIdMcpById, putBotsByBotIdScheduleById, putBotsByBotIdSettings, putBotsByBotIdSubagentsById, putBotsByBotIdSubagentsByIdContext, putBotsByBotIdSubagentsByIdSkills, putBotsById, putBotsByIdChannelByPlatform, putBotsByIdMembers, putBotsByIdOwner, putModelsById, putModelsModelByModelId, putProvidersById, putUsersById, putUsersByIdPassword, putUsersMe, putUsersMeChannelsByPlatform, putUsersMePassword } from '../sdk.gen';
-import type { DeleteBotsByBotIdContainerData, DeleteBotsByBotIdContainerError, DeleteBotsByBotIdContainerSkillsData, DeleteBotsByBotIdContainerSkillsError, DeleteBotsByBotIdContainerSkillsResponse, DeleteBotsByBotIdMcpByIdData, DeleteBotsByBotIdMcpByIdError, DeleteBotsByBotIdScheduleByIdData, DeleteBotsByBotIdScheduleByIdError, DeleteBotsByBotIdSettingsData, DeleteBotsByBotIdSettingsError, DeleteBotsByBotIdSubagentsByIdData, DeleteBotsByBotIdSubagentsByIdError, DeleteBotsByIdData, DeleteBotsByIdError, DeleteBotsByIdMembersByUserIdData, DeleteBotsByIdMembersByUserIdError, DeleteBotsByIdResponse, DeleteModelsByIdData, DeleteModelsByIdError, DeleteModelsModelByModelIdData, DeleteModelsModelByModelIdError, DeleteProvidersByIdData, DeleteProvidersByIdError, GetBotsByBotIdContainerData, GetBotsByBotIdContainerSkillsData, GetBotsByBotIdContainerSnapshotsData, GetBotsByBotIdMcpByIdData, GetBotsByBotIdMcpData, GetBotsByBotIdScheduleByIdData, GetBotsByBotIdScheduleData, GetBotsByBotIdSettingsData, GetBotsByBotIdSubagentsByIdContextData, GetBotsByBotIdSubagentsByIdData, GetBotsByBotIdSubagentsByIdSkillsData, GetBotsByBotIdSubagentsData, GetBotsByIdChannelByPlatformData, GetBotsByIdChecksData, GetBotsByIdData, GetBotsByIdMembersData, GetBotsData, GetChannelsByPlatformData, GetChannelsData, GetModelsByIdData, GetModelsCountData, GetModelsData, GetModelsModelByModelIdData, GetProvidersByIdData, GetProvidersByIdModelsData, GetProvidersCountData, GetProvidersData, GetProvidersNameByNameData, GetUsersByIdData, GetUsersData, GetUsersMeChannelsByPlatformData, GetUsersMeData, GetUsersMeIdentitiesData, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostBotsByBotIdContainerData, PostBotsByBotIdContainerError, PostBotsByBotIdContainerResponse, PostBotsByBotIdContainerSkillsData, PostBotsByBotIdContainerSkillsError, PostBotsByBotIdContainerSkillsResponse, PostBotsByBotIdContainerSnapshotsData, PostBotsByBotIdContainerSnapshotsError, PostBotsByBotIdContainerSnapshotsResponse, PostBotsByBotIdContainerStartData, PostBotsByBotIdContainerStartError, PostBotsByBotIdContainerStartResponse, PostBotsByBotIdContainerStopData, PostBotsByBotIdContainerStopError, PostBotsByBotIdContainerStopResponse, PostBotsByBotIdMcpData, PostBotsByBotIdMcpError, PostBotsByBotIdMcpResponse, PostBotsByBotIdMcpStdioByConnectionIdData, PostBotsByBotIdMcpStdioByConnectionIdError, PostBotsByBotIdMcpStdioByConnectionIdResponse, PostBotsByBotIdMcpStdioData, PostBotsByBotIdMcpStdioError, PostBotsByBotIdMcpStdioResponse, PostBotsByBotIdScheduleData, PostBotsByBotIdScheduleError, PostBotsByBotIdScheduleResponse, PostBotsByBotIdSettingsData, PostBotsByBotIdSettingsError, PostBotsByBotIdSettingsResponse, PostBotsByBotIdSubagentsByIdSkillsData, PostBotsByBotIdSubagentsByIdSkillsError, PostBotsByBotIdSubagentsByIdSkillsResponse, PostBotsByBotIdSubagentsData, PostBotsByBotIdSubagentsError, PostBotsByBotIdSubagentsResponse, PostBotsByBotIdToolsData, PostBotsByBotIdToolsError, PostBotsByBotIdToolsResponse, PostBotsByIdChannelByPlatformSendChatData, PostBotsByIdChannelByPlatformSendChatError, PostBotsByIdChannelByPlatformSendChatResponse, PostBotsByIdChannelByPlatformSendData, PostBotsByIdChannelByPlatformSendError, PostBotsByIdChannelByPlatformSendResponse, PostBotsData, PostBotsError, PostBotsResponse, PostEmbeddingsData, PostEmbeddingsError, PostEmbeddingsResponse, PostModelsData, PostModelsError, PostModelsResponse, PostProvidersData, PostProvidersError, PostProvidersResponse, PostUsersData, PostUsersError, PostUsersResponse, PutBotsByBotIdMcpByIdData, PutBotsByBotIdMcpByIdError, PutBotsByBotIdMcpByIdResponse, PutBotsByBotIdScheduleByIdData, PutBotsByBotIdScheduleByIdError, PutBotsByBotIdScheduleByIdResponse, PutBotsByBotIdSettingsData, PutBotsByBotIdSettingsError, PutBotsByBotIdSettingsResponse, PutBotsByBotIdSubagentsByIdContextData, PutBotsByBotIdSubagentsByIdContextError, PutBotsByBotIdSubagentsByIdContextResponse, PutBotsByBotIdSubagentsByIdData, PutBotsByBotIdSubagentsByIdError, PutBotsByBotIdSubagentsByIdResponse, PutBotsByBotIdSubagentsByIdSkillsData, PutBotsByBotIdSubagentsByIdSkillsError, PutBotsByBotIdSubagentsByIdSkillsResponse, PutBotsByIdChannelByPlatformData, PutBotsByIdChannelByPlatformError, PutBotsByIdChannelByPlatformResponse, PutBotsByIdData, PutBotsByIdError, PutBotsByIdMembersData, PutBotsByIdMembersError, PutBotsByIdMembersResponse, PutBotsByIdOwnerData, PutBotsByIdOwnerError, PutBotsByIdOwnerResponse, PutBotsByIdResponse, PutModelsByIdData, PutModelsByIdError, PutModelsByIdResponse, PutModelsModelByModelIdData, PutModelsModelByModelIdError, PutModelsModelByModelIdResponse, PutProvidersByIdData, PutProvidersByIdError, PutProvidersByIdResponse, PutUsersByIdData, PutUsersByIdError, PutUsersByIdPasswordData, PutUsersByIdPasswordError, PutUsersByIdResponse, PutUsersMeChannelsByPlatformData, PutUsersMeChannelsByPlatformError, PutUsersMeChannelsByPlatformResponse, PutUsersMeData, PutUsersMeError, PutUsersMePasswordData, PutUsersMePasswordError, PutUsersMeResponse } from '../types.gen';
+import { deleteBotsByBotIdContainer, deleteBotsByBotIdContainerSkills, deleteBotsByBotIdMcpById, deleteBotsByBotIdMemory, deleteBotsByBotIdMemoryById, deleteBotsByBotIdScheduleById, deleteBotsByBotIdSettings, deleteBotsByBotIdSubagentsById, deleteBotsById, deleteBotsByIdMembersByUserId, deleteModelsById, deleteModelsModelByModelId, deleteProvidersById, getBots, getBotsByBotIdContainer, getBotsByBotIdContainerSkills, getBotsByBotIdContainerSnapshots, getBotsByBotIdMcp, getBotsByBotIdMcpById, getBotsByBotIdMcpExport, getBotsByBotIdMemory, getBotsByBotIdMemoryUsage, getBotsByBotIdMessages, getBotsByBotIdSchedule, getBotsByBotIdScheduleById, getBotsByBotIdSettings, getBotsByBotIdSubagents, getBotsByBotIdSubagentsById, getBotsByBotIdSubagentsByIdContext, getBotsByBotIdSubagentsByIdSkills, getBotsById, getBotsByIdChannelByPlatform, getBotsByIdChecks, getBotsByIdChecksKeys, getBotsByIdChecksRunByKey, getBotsByIdMembers, getChannels, getChannelsByPlatform, getModels, getModelsById, getModelsCount, getModelsModelByModelId, getProviders, getProvidersById, getProvidersByIdModels, getProvidersCount, getProvidersNameByName, getUsers, getUsersById, getUsersMe, getUsersMeChannelsByPlatform, getUsersMeIdentities, type Options, postAuthLogin, postBots, postBotsByBotIdContainer, postBotsByBotIdContainerSkills, postBotsByBotIdContainerSnapshots, postBotsByBotIdContainerStart, postBotsByBotIdContainerStop, postBotsByBotIdMcp, postBotsByBotIdMcpOpsBatchDelete, postBotsByBotIdMcpStdio, postBotsByBotIdMcpStdioByConnectionId, postBotsByBotIdMemory, postBotsByBotIdMemoryCompact, postBotsByBotIdMemoryRebuild, postBotsByBotIdMemorySearch, postBotsByBotIdSchedule, postBotsByBotIdSettings, postBotsByBotIdSubagents, postBotsByBotIdSubagentsByIdSkills, postBotsByBotIdTools, postBotsByIdChannelByPlatformSend, postBotsByIdChannelByPlatformSendChat, postEmbeddings, postModels, postProviders, postUsers, putBotsByBotIdMcpById, putBotsByBotIdMcpImport, putBotsByBotIdScheduleById, putBotsByBotIdSettings, putBotsByBotIdSubagentsById, putBotsByBotIdSubagentsByIdContext, putBotsByBotIdSubagentsByIdSkills, putBotsById, putBotsByIdChannelByPlatform, putBotsByIdMembers, putBotsByIdOwner, putModelsById, putModelsModelByModelId, putProvidersById, putUsersById, putUsersByIdPassword, putUsersMe, putUsersMeChannelsByPlatform, putUsersMePassword } from '../sdk.gen';
+import type { DeleteBotsByBotIdContainerData, DeleteBotsByBotIdContainerError, DeleteBotsByBotIdContainerSkillsData, DeleteBotsByBotIdContainerSkillsError, DeleteBotsByBotIdContainerSkillsResponse, DeleteBotsByBotIdMcpByIdData, DeleteBotsByBotIdMcpByIdError, DeleteBotsByBotIdMemoryByIdData, DeleteBotsByBotIdMemoryByIdError, DeleteBotsByBotIdMemoryByIdResponse, DeleteBotsByBotIdMemoryData, DeleteBotsByBotIdMemoryError, DeleteBotsByBotIdMemoryResponse, DeleteBotsByBotIdScheduleByIdData, DeleteBotsByBotIdScheduleByIdError, DeleteBotsByBotIdSettingsData, DeleteBotsByBotIdSettingsError, DeleteBotsByBotIdSubagentsByIdData, DeleteBotsByBotIdSubagentsByIdError, DeleteBotsByIdData, DeleteBotsByIdError, DeleteBotsByIdMembersByUserIdData, DeleteBotsByIdMembersByUserIdError, DeleteBotsByIdResponse, DeleteModelsByIdData, DeleteModelsByIdError, DeleteModelsModelByModelIdData, DeleteModelsModelByModelIdError, DeleteProvidersByIdData, DeleteProvidersByIdError, GetBotsByBotIdContainerData, GetBotsByBotIdContainerSkillsData, GetBotsByBotIdContainerSnapshotsData, GetBotsByBotIdMcpByIdData, GetBotsByBotIdMcpData, GetBotsByBotIdMcpExportData, GetBotsByBotIdMemoryData, GetBotsByBotIdMemoryUsageData, GetBotsByBotIdMessagesData, GetBotsByBotIdScheduleByIdData, GetBotsByBotIdScheduleData, GetBotsByBotIdSettingsData, GetBotsByBotIdSubagentsByIdContextData, GetBotsByBotIdSubagentsByIdData, GetBotsByBotIdSubagentsByIdSkillsData, GetBotsByBotIdSubagentsData, GetBotsByIdChannelByPlatformData, GetBotsByIdChecksData, GetBotsByIdChecksKeysData, GetBotsByIdChecksRunByKeyData, GetBotsByIdData, GetBotsByIdMembersData, GetBotsData, GetChannelsByPlatformData, GetChannelsData, GetModelsByIdData, GetModelsCountData, GetModelsData, GetModelsModelByModelIdData, GetProvidersByIdData, GetProvidersByIdModelsData, GetProvidersCountData, GetProvidersData, GetProvidersNameByNameData, GetUsersByIdData, GetUsersData, GetUsersMeChannelsByPlatformData, GetUsersMeData, GetUsersMeIdentitiesData, PostAuthLoginData, PostAuthLoginError, PostAuthLoginResponse, PostBotsByBotIdContainerData, PostBotsByBotIdContainerError, PostBotsByBotIdContainerResponse, PostBotsByBotIdContainerSkillsData, PostBotsByBotIdContainerSkillsError, PostBotsByBotIdContainerSkillsResponse, PostBotsByBotIdContainerSnapshotsData, PostBotsByBotIdContainerSnapshotsError, PostBotsByBotIdContainerSnapshotsResponse, PostBotsByBotIdContainerStartData, PostBotsByBotIdContainerStartError, PostBotsByBotIdContainerStartResponse, PostBotsByBotIdContainerStopData, PostBotsByBotIdContainerStopError, PostBotsByBotIdContainerStopResponse, PostBotsByBotIdMcpData, PostBotsByBotIdMcpError, PostBotsByBotIdMcpOpsBatchDeleteData, PostBotsByBotIdMcpOpsBatchDeleteError, PostBotsByBotIdMcpResponse, PostBotsByBotIdMcpStdioByConnectionIdData, PostBotsByBotIdMcpStdioByConnectionIdError, PostBotsByBotIdMcpStdioByConnectionIdResponse, PostBotsByBotIdMcpStdioData, PostBotsByBotIdMcpStdioError, PostBotsByBotIdMcpStdioResponse, PostBotsByBotIdMemoryCompactData, PostBotsByBotIdMemoryCompactError, PostBotsByBotIdMemoryCompactResponse, PostBotsByBotIdMemoryData, PostBotsByBotIdMemoryError, PostBotsByBotIdMemoryRebuildData, PostBotsByBotIdMemoryRebuildError, PostBotsByBotIdMemoryRebuildResponse, PostBotsByBotIdMemoryResponse, PostBotsByBotIdMemorySearchData, PostBotsByBotIdMemorySearchError, PostBotsByBotIdMemorySearchResponse, PostBotsByBotIdScheduleData, PostBotsByBotIdScheduleError, PostBotsByBotIdScheduleResponse, PostBotsByBotIdSettingsData, PostBotsByBotIdSettingsError, PostBotsByBotIdSettingsResponse, PostBotsByBotIdSubagentsByIdSkillsData, PostBotsByBotIdSubagentsByIdSkillsError, PostBotsByBotIdSubagentsByIdSkillsResponse, PostBotsByBotIdSubagentsData, PostBotsByBotIdSubagentsError, PostBotsByBotIdSubagentsResponse, PostBotsByBotIdToolsData, PostBotsByBotIdToolsError, PostBotsByBotIdToolsResponse, PostBotsByIdChannelByPlatformSendChatData, PostBotsByIdChannelByPlatformSendChatError, PostBotsByIdChannelByPlatformSendChatResponse, PostBotsByIdChannelByPlatformSendData, PostBotsByIdChannelByPlatformSendError, PostBotsByIdChannelByPlatformSendResponse, PostBotsData, PostBotsError, PostBotsResponse, PostEmbeddingsData, PostEmbeddingsError, PostEmbeddingsResponse, PostModelsData, PostModelsError, PostModelsResponse, PostProvidersData, PostProvidersError, PostProvidersResponse, PostUsersData, PostUsersError, PostUsersResponse, PutBotsByBotIdMcpByIdData, PutBotsByBotIdMcpByIdError, PutBotsByBotIdMcpByIdResponse, PutBotsByBotIdMcpImportData, PutBotsByBotIdMcpImportError, PutBotsByBotIdMcpImportResponse, PutBotsByBotIdScheduleByIdData, PutBotsByBotIdScheduleByIdError, PutBotsByBotIdScheduleByIdResponse, PutBotsByBotIdSettingsData, PutBotsByBotIdSettingsError, PutBotsByBotIdSettingsResponse, PutBotsByBotIdSubagentsByIdContextData, PutBotsByBotIdSubagentsByIdContextError, PutBotsByBotIdSubagentsByIdContextResponse, PutBotsByBotIdSubagentsByIdData, PutBotsByBotIdSubagentsByIdError, PutBotsByBotIdSubagentsByIdResponse, PutBotsByBotIdSubagentsByIdSkillsData, PutBotsByBotIdSubagentsByIdSkillsError, PutBotsByBotIdSubagentsByIdSkillsResponse, PutBotsByIdChannelByPlatformData, PutBotsByIdChannelByPlatformError, PutBotsByIdChannelByPlatformResponse, PutBotsByIdData, PutBotsByIdError, PutBotsByIdMembersData, PutBotsByIdMembersError, PutBotsByIdMembersResponse, PutBotsByIdOwnerData, PutBotsByIdOwnerError, PutBotsByIdOwnerResponse, PutBotsByIdResponse, PutModelsByIdData, PutModelsByIdError, PutModelsByIdResponse, PutModelsModelByModelIdData, PutModelsModelByModelIdError, PutModelsModelByModelIdResponse, PutProvidersByIdData, PutProvidersByIdError, PutProvidersByIdResponse, PutUsersByIdData, PutUsersByIdError, PutUsersByIdPasswordData, PutUsersByIdPasswordError, PutUsersByIdResponse, PutUsersMeChannelsByPlatformData, PutUsersMeChannelsByPlatformError, PutUsersMeChannelsByPlatformResponse, PutUsersMeData, PutUsersMeError, PutUsersMePasswordData, PutUsersMePasswordError, PutUsersMeResponse } from '../types.gen';
 
 /**
  * Login
@@ -278,6 +278,22 @@ export const postBotsByBotIdMcpMutation = (options?: Partial<Options<PostBotsByB
 });
 
 /**
+ * Batch delete MCP connections
+ *
+ * Delete multiple MCP connections by IDs.
+ */
+export const postBotsByBotIdMcpOpsBatchDeleteMutation = (options?: Partial<Options<PostBotsByBotIdMcpOpsBatchDeleteData>>): UseMutationOptions<unknown, Options<PostBotsByBotIdMcpOpsBatchDeleteData>, PostBotsByBotIdMcpOpsBatchDeleteError> => ({
+    mutation: async (vars) => {
+        const { data } = await postBotsByBotIdMcpOpsBatchDelete({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+/**
  * Create MCP stdio proxy
  *
  * Start a stdio MCP process in the bot container and expose it as MCP HTTP endpoint.
@@ -301,6 +317,41 @@ export const postBotsByBotIdMcpStdioMutation = (options?: Partial<Options<PostBo
 export const postBotsByBotIdMcpStdioByConnectionIdMutation = (options?: Partial<Options<PostBotsByBotIdMcpStdioByConnectionIdData>>): UseMutationOptions<PostBotsByBotIdMcpStdioByConnectionIdResponse, Options<PostBotsByBotIdMcpStdioByConnectionIdData>, PostBotsByBotIdMcpStdioByConnectionIdError> => ({
     mutation: async (vars) => {
         const { data } = await postBotsByBotIdMcpStdioByConnectionId({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+export const getBotsByBotIdMcpExportQueryKey = (options?: Options<GetBotsByBotIdMcpExportData>) => createQueryKey('getBotsByBotIdMcpExport', options);
+
+/**
+ * Export MCP connections
+ *
+ * Export all MCP connections for a bot in standard mcpServers format.
+ */
+export const getBotsByBotIdMcpExportQuery = defineQueryOptions((options?: Options<GetBotsByBotIdMcpExportData>) => ({
+    key: getBotsByBotIdMcpExportQueryKey(options),
+    query: async (context) => {
+        const { data } = await getBotsByBotIdMcpExport({
+            ...options,
+            ...context,
+            throwOnError: true
+        });
+        return data;
+    }
+}));
+
+/**
+ * Import MCP connections
+ *
+ * Batch import MCP connections from standard mcpServers format. Existing connections (matched by name) get config updated with is_active preserved. New connections are created as active.
+ */
+export const putBotsByBotIdMcpImportMutation = (options?: Partial<Options<PutBotsByBotIdMcpImportData>>): UseMutationOptions<PutBotsByBotIdMcpImportResponse, Options<PutBotsByBotIdMcpImportData>, PutBotsByBotIdMcpImportError> => ({
+    mutation: async (vars) => {
+        const { data } = await putBotsByBotIdMcpImport({
             ...options,
             ...vars,
             throwOnError: true
@@ -359,6 +410,166 @@ export const putBotsByBotIdMcpByIdMutation = (options?: Partial<Options<PutBotsB
         return data;
     }
 });
+
+/**
+ * Delete memories
+ *
+ * Delete specific memories by IDs, or delete all memories if no IDs are provided
+ */
+export const deleteBotsByBotIdMemoryMutation = (options?: Partial<Options<DeleteBotsByBotIdMemoryData>>): UseMutationOptions<DeleteBotsByBotIdMemoryResponse, Options<DeleteBotsByBotIdMemoryData>, DeleteBotsByBotIdMemoryError> => ({
+    mutation: async (vars) => {
+        const { data } = await deleteBotsByBotIdMemory({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+export const getBotsByBotIdMemoryQueryKey = (options: Options<GetBotsByBotIdMemoryData>) => createQueryKey('getBotsByBotIdMemory', options);
+
+/**
+ * Get all memories
+ *
+ * List all memories in the bot-shared namespace
+ */
+export const getBotsByBotIdMemoryQuery = defineQueryOptions((options: Options<GetBotsByBotIdMemoryData>) => ({
+    key: getBotsByBotIdMemoryQueryKey(options),
+    query: async (context) => {
+        const { data } = await getBotsByBotIdMemory({
+            ...options,
+            ...context,
+            throwOnError: true
+        });
+        return data;
+    }
+}));
+
+/**
+ * Add memory
+ *
+ * Add memory into the bot-shared namespace
+ */
+export const postBotsByBotIdMemoryMutation = (options?: Partial<Options<PostBotsByBotIdMemoryData>>): UseMutationOptions<PostBotsByBotIdMemoryResponse, Options<PostBotsByBotIdMemoryData>, PostBotsByBotIdMemoryError> => ({
+    mutation: async (vars) => {
+        const { data } = await postBotsByBotIdMemory({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+/**
+ * Compact memories
+ *
+ * Consolidate memories by merging similar/redundant entries using LLM.
+ *
+ * **ratio** (required, range (0,1]):
+ * - 0.8 = light compression, mostly dedup, keep ~80% of entries
+ * - 0.5 = moderate compression, merge similar facts, keep ~50%
+ * - 0.3 = aggressive compression, heavily consolidate, keep ~30%
+ *
+ * **decay_days** (optional): enable time decay — memories older than N days are treated as low priority and more likely to be merged/dropped.
+ */
+export const postBotsByBotIdMemoryCompactMutation = (options?: Partial<Options<PostBotsByBotIdMemoryCompactData>>): UseMutationOptions<PostBotsByBotIdMemoryCompactResponse, Options<PostBotsByBotIdMemoryCompactData>, PostBotsByBotIdMemoryCompactError> => ({
+    mutation: async (vars) => {
+        const { data } = await postBotsByBotIdMemoryCompact({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+/**
+ * Rebuild memories from filesystem
+ *
+ * Read memory files from the container filesystem (source of truth) and restore missing entries to Qdrant
+ */
+export const postBotsByBotIdMemoryRebuildMutation = (options?: Partial<Options<PostBotsByBotIdMemoryRebuildData>>): UseMutationOptions<PostBotsByBotIdMemoryRebuildResponse, Options<PostBotsByBotIdMemoryRebuildData>, PostBotsByBotIdMemoryRebuildError> => ({
+    mutation: async (vars) => {
+        const { data } = await postBotsByBotIdMemoryRebuild({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+/**
+ * Search memory
+ *
+ * Search memory in the bot-shared namespace
+ */
+export const postBotsByBotIdMemorySearchMutation = (options?: Partial<Options<PostBotsByBotIdMemorySearchData>>): UseMutationOptions<PostBotsByBotIdMemorySearchResponse, Options<PostBotsByBotIdMemorySearchData>, PostBotsByBotIdMemorySearchError> => ({
+    mutation: async (vars) => {
+        const { data } = await postBotsByBotIdMemorySearch({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+export const getBotsByBotIdMemoryUsageQueryKey = (options: Options<GetBotsByBotIdMemoryUsageData>) => createQueryKey('getBotsByBotIdMemoryUsage', options);
+
+/**
+ * Get memory usage
+ *
+ * Query the estimated storage usage of current memories
+ */
+export const getBotsByBotIdMemoryUsageQuery = defineQueryOptions((options: Options<GetBotsByBotIdMemoryUsageData>) => ({
+    key: getBotsByBotIdMemoryUsageQueryKey(options),
+    query: async (context) => {
+        const { data } = await getBotsByBotIdMemoryUsage({
+            ...options,
+            ...context,
+            throwOnError: true
+        });
+        return data;
+    }
+}));
+
+/**
+ * Delete a single memory
+ *
+ * Delete a single memory by its ID
+ */
+export const deleteBotsByBotIdMemoryByIdMutation = (options?: Partial<Options<DeleteBotsByBotIdMemoryByIdData>>): UseMutationOptions<DeleteBotsByBotIdMemoryByIdResponse, Options<DeleteBotsByBotIdMemoryByIdData>, DeleteBotsByBotIdMemoryByIdError> => ({
+    mutation: async (vars) => {
+        const { data } = await deleteBotsByBotIdMemoryById({
+            ...options,
+            ...vars,
+            throwOnError: true
+        });
+        return data;
+    }
+});
+
+export const getBotsByBotIdMessagesQueryKey = (options: Options<GetBotsByBotIdMessagesData>) => createQueryKey('getBotsByBotIdMessages', options);
+
+/**
+ * List bot history messages
+ *
+ * List messages for a bot history with optional pagination
+ */
+export const getBotsByBotIdMessagesQuery = defineQueryOptions((options: Options<GetBotsByBotIdMessagesData>) => ({
+    key: getBotsByBotIdMessagesQueryKey(options),
+    query: async (context) => {
+        const { data } = await getBotsByBotIdMessages({
+            ...options,
+            ...context,
+            throwOnError: true
+        });
+        return data;
+    }
+}));
 
 export const getBotsByBotIdScheduleQueryKey = (options?: Options<GetBotsByBotIdScheduleData>) => createQueryKey('getBotsByBotIdSchedule', options);
 
@@ -830,6 +1041,44 @@ export const getBotsByIdChecksQuery = defineQueryOptions((options: Options<GetBo
     key: getBotsByIdChecksQueryKey(options),
     query: async (context) => {
         const { data } = await getBotsByIdChecks({
+            ...options,
+            ...context,
+            throwOnError: true
+        });
+        return data;
+    }
+}));
+
+export const getBotsByIdChecksKeysQueryKey = (options: Options<GetBotsByIdChecksKeysData>) => createQueryKey('getBotsByIdChecksKeys', options);
+
+/**
+ * List available check keys
+ *
+ * Returns all check keys available for a bot (builtin + MCP connections)
+ */
+export const getBotsByIdChecksKeysQuery = defineQueryOptions((options: Options<GetBotsByIdChecksKeysData>) => ({
+    key: getBotsByIdChecksKeysQueryKey(options),
+    query: async (context) => {
+        const { data } = await getBotsByIdChecksKeys({
+            ...options,
+            ...context,
+            throwOnError: true
+        });
+        return data;
+    }
+}));
+
+export const getBotsByIdChecksRunByKeyQueryKey = (options: Options<GetBotsByIdChecksRunByKeyData>) => createQueryKey('getBotsByIdChecksRunByKey', options);
+
+/**
+ * Run a single bot check
+ *
+ * Evaluate one check key for a bot
+ */
+export const getBotsByIdChecksRunByKeyQuery = defineQueryOptions((options: Options<GetBotsByIdChecksRunByKeyData>) => ({
+    key: getBotsByIdChecksRunByKeyQueryKey(options),
+    query: async (context) => {
+        const { data } = await getBotsByIdChecksRunByKey({
             ...options,
             ...context,
             throwOnError: true

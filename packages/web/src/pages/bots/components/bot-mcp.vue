@@ -576,7 +576,13 @@ import {
 } from '@memoh/ui'
 import DataTable from '@/components/data-table/index.vue'
 import { useKeyValueTags } from '@/composables/useKeyValueTags'
-import { client } from '@memoh/sdk/client'
+import {
+  getBotsByBotIdMcp,
+  postBotsByBotIdMcp,
+  putBotsByBotIdMcpById,
+  deleteBotsByBotIdMcpById,
+  postBotsByBotIdMcpOpsBatchDelete,
+} from '@memoh/sdk'
 import ConfirmPopover from '@/components/confirm-popover/index.vue'
 
 interface McpItem {
@@ -800,10 +806,10 @@ const columns = computed<ColumnDef<McpItem>[]>(() => [
 async function loadList() {
   loading.value = true
   try {
-    const { data } = await client.get({
-      url: `/bots/${props.botId}/mcp`,
+    const { data } = await getBotsByBotIdMcp({
+      path: { bot_id: props.botId },
       throwOnError: true,
-    }) as { data: { items: McpItem[] } }
+    })
     items.value = data.items ?? []
   } catch (error) {
     toast.error(resolveError(error, t('common.loadFailed')))
@@ -977,15 +983,15 @@ async function handleSubmit() {
   try {
     const body = buildRequestBody()
     if (editingItem.value) {
-      await client.put({
-        url: `/bots/${props.botId}/mcp/${editingItem.value.id}`,
-        body,
+      await putBotsByBotIdMcpById({
+        path: { bot_id: props.botId, id: editingItem.value.id },
+        body: body as any,
         throwOnError: true,
       })
     } else {
-      await client.post({
-        url: `/bots/${props.botId}/mcp`,
-        body,
+      await postBotsByBotIdMcp({
+        path: { bot_id: props.botId },
+        body: body as any,
         throwOnError: true,
       })
     }
@@ -1001,8 +1007,8 @@ async function handleSubmit() {
 
 async function handleDelete(id: string) {
   try {
-    await client.delete({
-      url: `/bots/${props.botId}/mcp/${id}`,
+    await deleteBotsByBotIdMcpById({
+      path: { bot_id: props.botId, id },
       throwOnError: true,
     })
     selectedIds.value = selectedIds.value.filter((x) => x !== id)
@@ -1016,8 +1022,8 @@ async function handleDelete(id: string) {
 async function handleBatchDelete() {
   if (selectedIds.value.length === 0) return
   try {
-    await client.post({
-      url: `/bots/${props.botId}/mcp-ops/batch-delete`,
+    await postBotsByBotIdMcpOpsBatchDelete({
+      path: { bot_id: props.botId },
       body: { ids: selectedIds.value },
       throwOnError: true,
     })

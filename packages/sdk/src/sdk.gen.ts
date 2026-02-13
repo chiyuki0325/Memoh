@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteBotsByBotIdContainerData, DeleteBotsByBotIdContainerErrors, DeleteBotsByBotIdContainerResponses, DeleteBotsByBotIdContainerSkillsData, DeleteBotsByBotIdContainerSkillsErrors, DeleteBotsByBotIdContainerSkillsResponses, DeleteBotsByBotIdMcpByIdData, DeleteBotsByBotIdMcpByIdErrors, DeleteBotsByBotIdMcpByIdResponses, DeleteBotsByBotIdScheduleByIdData, DeleteBotsByBotIdScheduleByIdErrors, DeleteBotsByBotIdScheduleByIdResponses, DeleteBotsByBotIdSettingsData, DeleteBotsByBotIdSettingsErrors, DeleteBotsByBotIdSettingsResponses, DeleteBotsByBotIdSubagentsByIdData, DeleteBotsByBotIdSubagentsByIdErrors, DeleteBotsByBotIdSubagentsByIdResponses, DeleteBotsByIdData, DeleteBotsByIdErrors, DeleteBotsByIdMembersByUserIdData, DeleteBotsByIdMembersByUserIdErrors, DeleteBotsByIdMembersByUserIdResponses, DeleteBotsByIdResponses, DeleteModelsByIdData, DeleteModelsByIdErrors, DeleteModelsByIdResponses, DeleteModelsModelByModelIdData, DeleteModelsModelByModelIdErrors, DeleteModelsModelByModelIdResponses, DeleteProvidersByIdData, DeleteProvidersByIdErrors, DeleteProvidersByIdResponses, GetBotsByBotIdContainerData, GetBotsByBotIdContainerErrors, GetBotsByBotIdContainerResponses, GetBotsByBotIdContainerSkillsData, GetBotsByBotIdContainerSkillsErrors, GetBotsByBotIdContainerSkillsResponses, GetBotsByBotIdContainerSnapshotsData, GetBotsByBotIdContainerSnapshotsResponses, GetBotsByBotIdMcpByIdData, GetBotsByBotIdMcpByIdErrors, GetBotsByBotIdMcpByIdResponses, GetBotsByBotIdMcpData, GetBotsByBotIdMcpErrors, GetBotsByBotIdMcpResponses, GetBotsByBotIdScheduleByIdData, GetBotsByBotIdScheduleByIdErrors, GetBotsByBotIdScheduleByIdResponses, GetBotsByBotIdScheduleData, GetBotsByBotIdScheduleErrors, GetBotsByBotIdScheduleResponses, GetBotsByBotIdSettingsData, GetBotsByBotIdSettingsErrors, GetBotsByBotIdSettingsResponses, GetBotsByBotIdSubagentsByIdContextData, GetBotsByBotIdSubagentsByIdContextErrors, GetBotsByBotIdSubagentsByIdContextResponses, GetBotsByBotIdSubagentsByIdData, GetBotsByBotIdSubagentsByIdErrors, GetBotsByBotIdSubagentsByIdResponses, GetBotsByBotIdSubagentsByIdSkillsData, GetBotsByBotIdSubagentsByIdSkillsErrors, GetBotsByBotIdSubagentsByIdSkillsResponses, GetBotsByBotIdSubagentsData, GetBotsByBotIdSubagentsErrors, GetBotsByBotIdSubagentsResponses, GetBotsByIdChannelByPlatformData, GetBotsByIdChannelByPlatformErrors, GetBotsByIdChannelByPlatformResponses, GetBotsByIdChecksData, GetBotsByIdChecksErrors, GetBotsByIdChecksResponses, GetBotsByIdData, GetBotsByIdErrors, GetBotsByIdMembersData, GetBotsByIdMembersErrors, GetBotsByIdMembersResponses, GetBotsByIdResponses, GetBotsData, GetBotsErrors, GetBotsResponses, GetChannelsByPlatformData, GetChannelsByPlatformErrors, GetChannelsByPlatformResponses, GetChannelsData, GetChannelsErrors, GetChannelsResponses, GetModelsByIdData, GetModelsByIdErrors, GetModelsByIdResponses, GetModelsCountData, GetModelsCountErrors, GetModelsCountResponses, GetModelsData, GetModelsErrors, GetModelsModelByModelIdData, GetModelsModelByModelIdErrors, GetModelsModelByModelIdResponses, GetModelsResponses, GetProvidersByIdData, GetProvidersByIdErrors, GetProvidersByIdModelsData, GetProvidersByIdModelsErrors, GetProvidersByIdModelsResponses, GetProvidersByIdResponses, GetProvidersCountData, GetProvidersCountErrors, GetProvidersCountResponses, GetProvidersData, GetProvidersErrors, GetProvidersNameByNameData, GetProvidersNameByNameErrors, GetProvidersNameByNameResponses, GetProvidersResponses, GetUsersByIdData, GetUsersByIdErrors, GetUsersByIdResponses, GetUsersData, GetUsersErrors, GetUsersMeChannelsByPlatformData, GetUsersMeChannelsByPlatformErrors, GetUsersMeChannelsByPlatformResponses, GetUsersMeData, GetUsersMeErrors, GetUsersMeIdentitiesData, GetUsersMeIdentitiesErrors, GetUsersMeIdentitiesResponses, GetUsersMeResponses, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostBotsByBotIdContainerData, PostBotsByBotIdContainerErrors, PostBotsByBotIdContainerResponses, PostBotsByBotIdContainerSkillsData, PostBotsByBotIdContainerSkillsErrors, PostBotsByBotIdContainerSkillsResponses, PostBotsByBotIdContainerSnapshotsData, PostBotsByBotIdContainerSnapshotsErrors, PostBotsByBotIdContainerSnapshotsResponses, PostBotsByBotIdContainerStartData, PostBotsByBotIdContainerStartErrors, PostBotsByBotIdContainerStartResponses, PostBotsByBotIdContainerStopData, PostBotsByBotIdContainerStopErrors, PostBotsByBotIdContainerStopResponses, PostBotsByBotIdMcpData, PostBotsByBotIdMcpErrors, PostBotsByBotIdMcpResponses, PostBotsByBotIdMcpStdioByConnectionIdData, PostBotsByBotIdMcpStdioByConnectionIdErrors, PostBotsByBotIdMcpStdioByConnectionIdResponses, PostBotsByBotIdMcpStdioData, PostBotsByBotIdMcpStdioErrors, PostBotsByBotIdMcpStdioResponses, PostBotsByBotIdScheduleData, PostBotsByBotIdScheduleErrors, PostBotsByBotIdScheduleResponses, PostBotsByBotIdSettingsData, PostBotsByBotIdSettingsErrors, PostBotsByBotIdSettingsResponses, PostBotsByBotIdSubagentsByIdSkillsData, PostBotsByBotIdSubagentsByIdSkillsErrors, PostBotsByBotIdSubagentsByIdSkillsResponses, PostBotsByBotIdSubagentsData, PostBotsByBotIdSubagentsErrors, PostBotsByBotIdSubagentsResponses, PostBotsByBotIdToolsData, PostBotsByBotIdToolsErrors, PostBotsByBotIdToolsResponses, PostBotsByIdChannelByPlatformSendChatData, PostBotsByIdChannelByPlatformSendChatErrors, PostBotsByIdChannelByPlatformSendChatResponses, PostBotsByIdChannelByPlatformSendData, PostBotsByIdChannelByPlatformSendErrors, PostBotsByIdChannelByPlatformSendResponses, PostBotsData, PostBotsErrors, PostBotsResponses, PostEmbeddingsData, PostEmbeddingsErrors, PostEmbeddingsResponses, PostModelsData, PostModelsErrors, PostModelsResponses, PostProvidersData, PostProvidersErrors, PostProvidersResponses, PostUsersData, PostUsersErrors, PostUsersResponses, PutBotsByBotIdMcpByIdData, PutBotsByBotIdMcpByIdErrors, PutBotsByBotIdMcpByIdResponses, PutBotsByBotIdScheduleByIdData, PutBotsByBotIdScheduleByIdErrors, PutBotsByBotIdScheduleByIdResponses, PutBotsByBotIdSettingsData, PutBotsByBotIdSettingsErrors, PutBotsByBotIdSettingsResponses, PutBotsByBotIdSubagentsByIdContextData, PutBotsByBotIdSubagentsByIdContextErrors, PutBotsByBotIdSubagentsByIdContextResponses, PutBotsByBotIdSubagentsByIdData, PutBotsByBotIdSubagentsByIdErrors, PutBotsByBotIdSubagentsByIdResponses, PutBotsByBotIdSubagentsByIdSkillsData, PutBotsByBotIdSubagentsByIdSkillsErrors, PutBotsByBotIdSubagentsByIdSkillsResponses, PutBotsByIdChannelByPlatformData, PutBotsByIdChannelByPlatformErrors, PutBotsByIdChannelByPlatformResponses, PutBotsByIdData, PutBotsByIdErrors, PutBotsByIdMembersData, PutBotsByIdMembersErrors, PutBotsByIdMembersResponses, PutBotsByIdOwnerData, PutBotsByIdOwnerErrors, PutBotsByIdOwnerResponses, PutBotsByIdResponses, PutModelsByIdData, PutModelsByIdErrors, PutModelsByIdResponses, PutModelsModelByModelIdData, PutModelsModelByModelIdErrors, PutModelsModelByModelIdResponses, PutProvidersByIdData, PutProvidersByIdErrors, PutProvidersByIdResponses, PutUsersByIdData, PutUsersByIdErrors, PutUsersByIdPasswordData, PutUsersByIdPasswordErrors, PutUsersByIdPasswordResponses, PutUsersByIdResponses, PutUsersMeChannelsByPlatformData, PutUsersMeChannelsByPlatformErrors, PutUsersMeChannelsByPlatformResponses, PutUsersMeData, PutUsersMeErrors, PutUsersMePasswordData, PutUsersMePasswordErrors, PutUsersMePasswordResponses, PutUsersMeResponses } from './types.gen';
+import type { DeleteBotsByBotIdContainerData, DeleteBotsByBotIdContainerErrors, DeleteBotsByBotIdContainerResponses, DeleteBotsByBotIdContainerSkillsData, DeleteBotsByBotIdContainerSkillsErrors, DeleteBotsByBotIdContainerSkillsResponses, DeleteBotsByBotIdMcpByIdData, DeleteBotsByBotIdMcpByIdErrors, DeleteBotsByBotIdMcpByIdResponses, DeleteBotsByBotIdMemoryByIdData, DeleteBotsByBotIdMemoryByIdErrors, DeleteBotsByBotIdMemoryByIdResponses, DeleteBotsByBotIdMemoryData, DeleteBotsByBotIdMemoryErrors, DeleteBotsByBotIdMemoryResponses, DeleteBotsByBotIdScheduleByIdData, DeleteBotsByBotIdScheduleByIdErrors, DeleteBotsByBotIdScheduleByIdResponses, DeleteBotsByBotIdSettingsData, DeleteBotsByBotIdSettingsErrors, DeleteBotsByBotIdSettingsResponses, DeleteBotsByBotIdSubagentsByIdData, DeleteBotsByBotIdSubagentsByIdErrors, DeleteBotsByBotIdSubagentsByIdResponses, DeleteBotsByIdData, DeleteBotsByIdErrors, DeleteBotsByIdMembersByUserIdData, DeleteBotsByIdMembersByUserIdErrors, DeleteBotsByIdMembersByUserIdResponses, DeleteBotsByIdResponses, DeleteModelsByIdData, DeleteModelsByIdErrors, DeleteModelsByIdResponses, DeleteModelsModelByModelIdData, DeleteModelsModelByModelIdErrors, DeleteModelsModelByModelIdResponses, DeleteProvidersByIdData, DeleteProvidersByIdErrors, DeleteProvidersByIdResponses, GetBotsByBotIdContainerData, GetBotsByBotIdContainerErrors, GetBotsByBotIdContainerResponses, GetBotsByBotIdContainerSkillsData, GetBotsByBotIdContainerSkillsErrors, GetBotsByBotIdContainerSkillsResponses, GetBotsByBotIdContainerSnapshotsData, GetBotsByBotIdContainerSnapshotsResponses, GetBotsByBotIdMcpByIdData, GetBotsByBotIdMcpByIdErrors, GetBotsByBotIdMcpByIdResponses, GetBotsByBotIdMcpData, GetBotsByBotIdMcpErrors, GetBotsByBotIdMcpExportData, GetBotsByBotIdMcpExportErrors, GetBotsByBotIdMcpExportResponses, GetBotsByBotIdMcpResponses, GetBotsByBotIdMemoryData, GetBotsByBotIdMemoryErrors, GetBotsByBotIdMemoryResponses, GetBotsByBotIdMemoryUsageData, GetBotsByBotIdMemoryUsageErrors, GetBotsByBotIdMemoryUsageResponses, GetBotsByBotIdMessagesData, GetBotsByBotIdMessagesErrors, GetBotsByBotIdMessagesResponses, GetBotsByBotIdScheduleByIdData, GetBotsByBotIdScheduleByIdErrors, GetBotsByBotIdScheduleByIdResponses, GetBotsByBotIdScheduleData, GetBotsByBotIdScheduleErrors, GetBotsByBotIdScheduleResponses, GetBotsByBotIdSettingsData, GetBotsByBotIdSettingsErrors, GetBotsByBotIdSettingsResponses, GetBotsByBotIdSubagentsByIdContextData, GetBotsByBotIdSubagentsByIdContextErrors, GetBotsByBotIdSubagentsByIdContextResponses, GetBotsByBotIdSubagentsByIdData, GetBotsByBotIdSubagentsByIdErrors, GetBotsByBotIdSubagentsByIdResponses, GetBotsByBotIdSubagentsByIdSkillsData, GetBotsByBotIdSubagentsByIdSkillsErrors, GetBotsByBotIdSubagentsByIdSkillsResponses, GetBotsByBotIdSubagentsData, GetBotsByBotIdSubagentsErrors, GetBotsByBotIdSubagentsResponses, GetBotsByIdChannelByPlatformData, GetBotsByIdChannelByPlatformErrors, GetBotsByIdChannelByPlatformResponses, GetBotsByIdChecksData, GetBotsByIdChecksErrors, GetBotsByIdChecksKeysData, GetBotsByIdChecksKeysResponses, GetBotsByIdChecksResponses, GetBotsByIdChecksRunByKeyData, GetBotsByIdChecksRunByKeyResponses, GetBotsByIdData, GetBotsByIdErrors, GetBotsByIdMembersData, GetBotsByIdMembersErrors, GetBotsByIdMembersResponses, GetBotsByIdResponses, GetBotsData, GetBotsErrors, GetBotsResponses, GetChannelsByPlatformData, GetChannelsByPlatformErrors, GetChannelsByPlatformResponses, GetChannelsData, GetChannelsErrors, GetChannelsResponses, GetModelsByIdData, GetModelsByIdErrors, GetModelsByIdResponses, GetModelsCountData, GetModelsCountErrors, GetModelsCountResponses, GetModelsData, GetModelsErrors, GetModelsModelByModelIdData, GetModelsModelByModelIdErrors, GetModelsModelByModelIdResponses, GetModelsResponses, GetProvidersByIdData, GetProvidersByIdErrors, GetProvidersByIdModelsData, GetProvidersByIdModelsErrors, GetProvidersByIdModelsResponses, GetProvidersByIdResponses, GetProvidersCountData, GetProvidersCountErrors, GetProvidersCountResponses, GetProvidersData, GetProvidersErrors, GetProvidersNameByNameData, GetProvidersNameByNameErrors, GetProvidersNameByNameResponses, GetProvidersResponses, GetUsersByIdData, GetUsersByIdErrors, GetUsersByIdResponses, GetUsersData, GetUsersErrors, GetUsersMeChannelsByPlatformData, GetUsersMeChannelsByPlatformErrors, GetUsersMeChannelsByPlatformResponses, GetUsersMeData, GetUsersMeErrors, GetUsersMeIdentitiesData, GetUsersMeIdentitiesErrors, GetUsersMeIdentitiesResponses, GetUsersMeResponses, GetUsersResponses, PostAuthLoginData, PostAuthLoginErrors, PostAuthLoginResponses, PostBotsByBotIdContainerData, PostBotsByBotIdContainerErrors, PostBotsByBotIdContainerResponses, PostBotsByBotIdContainerSkillsData, PostBotsByBotIdContainerSkillsErrors, PostBotsByBotIdContainerSkillsResponses, PostBotsByBotIdContainerSnapshotsData, PostBotsByBotIdContainerSnapshotsErrors, PostBotsByBotIdContainerSnapshotsResponses, PostBotsByBotIdContainerStartData, PostBotsByBotIdContainerStartErrors, PostBotsByBotIdContainerStartResponses, PostBotsByBotIdContainerStopData, PostBotsByBotIdContainerStopErrors, PostBotsByBotIdContainerStopResponses, PostBotsByBotIdMcpData, PostBotsByBotIdMcpErrors, PostBotsByBotIdMcpOpsBatchDeleteData, PostBotsByBotIdMcpOpsBatchDeleteErrors, PostBotsByBotIdMcpOpsBatchDeleteResponses, PostBotsByBotIdMcpResponses, PostBotsByBotIdMcpStdioByConnectionIdData, PostBotsByBotIdMcpStdioByConnectionIdErrors, PostBotsByBotIdMcpStdioByConnectionIdResponses, PostBotsByBotIdMcpStdioData, PostBotsByBotIdMcpStdioErrors, PostBotsByBotIdMcpStdioResponses, PostBotsByBotIdMemoryCompactData, PostBotsByBotIdMemoryCompactErrors, PostBotsByBotIdMemoryCompactResponses, PostBotsByBotIdMemoryData, PostBotsByBotIdMemoryErrors, PostBotsByBotIdMemoryRebuildData, PostBotsByBotIdMemoryRebuildErrors, PostBotsByBotIdMemoryRebuildResponses, PostBotsByBotIdMemoryResponses, PostBotsByBotIdMemorySearchData, PostBotsByBotIdMemorySearchErrors, PostBotsByBotIdMemorySearchResponses, PostBotsByBotIdScheduleData, PostBotsByBotIdScheduleErrors, PostBotsByBotIdScheduleResponses, PostBotsByBotIdSettingsData, PostBotsByBotIdSettingsErrors, PostBotsByBotIdSettingsResponses, PostBotsByBotIdSubagentsByIdSkillsData, PostBotsByBotIdSubagentsByIdSkillsErrors, PostBotsByBotIdSubagentsByIdSkillsResponses, PostBotsByBotIdSubagentsData, PostBotsByBotIdSubagentsErrors, PostBotsByBotIdSubagentsResponses, PostBotsByBotIdToolsData, PostBotsByBotIdToolsErrors, PostBotsByBotIdToolsResponses, PostBotsByIdChannelByPlatformSendChatData, PostBotsByIdChannelByPlatformSendChatErrors, PostBotsByIdChannelByPlatformSendChatResponses, PostBotsByIdChannelByPlatformSendData, PostBotsByIdChannelByPlatformSendErrors, PostBotsByIdChannelByPlatformSendResponses, PostBotsData, PostBotsErrors, PostBotsResponses, PostEmbeddingsData, PostEmbeddingsErrors, PostEmbeddingsResponses, PostModelsData, PostModelsErrors, PostModelsResponses, PostProvidersData, PostProvidersErrors, PostProvidersResponses, PostUsersData, PostUsersErrors, PostUsersResponses, PutBotsByBotIdMcpByIdData, PutBotsByBotIdMcpByIdErrors, PutBotsByBotIdMcpByIdResponses, PutBotsByBotIdMcpImportData, PutBotsByBotIdMcpImportErrors, PutBotsByBotIdMcpImportResponses, PutBotsByBotIdScheduleByIdData, PutBotsByBotIdScheduleByIdErrors, PutBotsByBotIdScheduleByIdResponses, PutBotsByBotIdSettingsData, PutBotsByBotIdSettingsErrors, PutBotsByBotIdSettingsResponses, PutBotsByBotIdSubagentsByIdContextData, PutBotsByBotIdSubagentsByIdContextErrors, PutBotsByBotIdSubagentsByIdContextResponses, PutBotsByBotIdSubagentsByIdData, PutBotsByBotIdSubagentsByIdErrors, PutBotsByBotIdSubagentsByIdResponses, PutBotsByBotIdSubagentsByIdSkillsData, PutBotsByBotIdSubagentsByIdSkillsErrors, PutBotsByBotIdSubagentsByIdSkillsResponses, PutBotsByIdChannelByPlatformData, PutBotsByIdChannelByPlatformErrors, PutBotsByIdChannelByPlatformResponses, PutBotsByIdData, PutBotsByIdErrors, PutBotsByIdMembersData, PutBotsByIdMembersErrors, PutBotsByIdMembersResponses, PutBotsByIdOwnerData, PutBotsByIdOwnerErrors, PutBotsByIdOwnerResponses, PutBotsByIdResponses, PutModelsByIdData, PutModelsByIdErrors, PutModelsByIdResponses, PutModelsModelByModelIdData, PutModelsModelByModelIdErrors, PutModelsModelByModelIdResponses, PutProvidersByIdData, PutProvidersByIdErrors, PutProvidersByIdResponses, PutUsersByIdData, PutUsersByIdErrors, PutUsersByIdPasswordData, PutUsersByIdPasswordErrors, PutUsersByIdPasswordResponses, PutUsersByIdResponses, PutUsersMeChannelsByPlatformData, PutUsersMeChannelsByPlatformErrors, PutUsersMeChannelsByPlatformResponses, PutUsersMeData, PutUsersMeErrors, PutUsersMePasswordData, PutUsersMePasswordErrors, PutUsersMePasswordResponses, PutUsersMeResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -153,6 +153,20 @@ export const postBotsByBotIdMcp = <ThrowOnError extends boolean = false>(options
 });
 
 /**
+ * Batch delete MCP connections
+ *
+ * Delete multiple MCP connections by IDs.
+ */
+export const postBotsByBotIdMcpOpsBatchDelete = <ThrowOnError extends boolean = false>(options: Options<PostBotsByBotIdMcpOpsBatchDeleteData, ThrowOnError>) => (options.client ?? client).post<PostBotsByBotIdMcpOpsBatchDeleteResponses, PostBotsByBotIdMcpOpsBatchDeleteErrors, ThrowOnError>({
+    url: '/bots/{bot_id}/mcp-ops/batch-delete',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Create MCP stdio proxy
  *
  * Start a stdio MCP process in the bot container and expose it as MCP HTTP endpoint.
@@ -173,6 +187,27 @@ export const postBotsByBotIdMcpStdio = <ThrowOnError extends boolean = false>(op
  */
 export const postBotsByBotIdMcpStdioByConnectionId = <ThrowOnError extends boolean = false>(options: Options<PostBotsByBotIdMcpStdioByConnectionIdData, ThrowOnError>) => (options.client ?? client).post<PostBotsByBotIdMcpStdioByConnectionIdResponses, PostBotsByBotIdMcpStdioByConnectionIdErrors, ThrowOnError>({
     url: '/bots/{bot_id}/mcp-stdio/{connection_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Export MCP connections
+ *
+ * Export all MCP connections for a bot in standard mcpServers format.
+ */
+export const getBotsByBotIdMcpExport = <ThrowOnError extends boolean = false>(options?: Options<GetBotsByBotIdMcpExportData, ThrowOnError>) => (options?.client ?? client).get<GetBotsByBotIdMcpExportResponses, GetBotsByBotIdMcpExportErrors, ThrowOnError>({ url: '/bots/{bot_id}/mcp/export', ...options });
+
+/**
+ * Import MCP connections
+ *
+ * Batch import MCP connections from standard mcpServers format. Existing connections (matched by name) get config updated with is_active preserved. New connections are created as active.
+ */
+export const putBotsByBotIdMcpImport = <ThrowOnError extends boolean = false>(options: Options<PutBotsByBotIdMcpImportData, ThrowOnError>) => (options.client ?? client).put<PutBotsByBotIdMcpImportResponses, PutBotsByBotIdMcpImportErrors, ThrowOnError>({
+    url: '/bots/{bot_id}/mcp/import',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -207,6 +242,104 @@ export const putBotsByBotIdMcpById = <ThrowOnError extends boolean = false>(opti
         ...options.headers
     }
 });
+
+/**
+ * Delete memories
+ *
+ * Delete specific memories by IDs, or delete all memories if no IDs are provided
+ */
+export const deleteBotsByBotIdMemory = <ThrowOnError extends boolean = false>(options: Options<DeleteBotsByBotIdMemoryData, ThrowOnError>) => (options.client ?? client).delete<DeleteBotsByBotIdMemoryResponses, DeleteBotsByBotIdMemoryErrors, ThrowOnError>({
+    url: '/bots/{bot_id}/memory',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get all memories
+ *
+ * List all memories in the bot-shared namespace
+ */
+export const getBotsByBotIdMemory = <ThrowOnError extends boolean = false>(options: Options<GetBotsByBotIdMemoryData, ThrowOnError>) => (options.client ?? client).get<GetBotsByBotIdMemoryResponses, GetBotsByBotIdMemoryErrors, ThrowOnError>({ url: '/bots/{bot_id}/memory', ...options });
+
+/**
+ * Add memory
+ *
+ * Add memory into the bot-shared namespace
+ */
+export const postBotsByBotIdMemory = <ThrowOnError extends boolean = false>(options: Options<PostBotsByBotIdMemoryData, ThrowOnError>) => (options.client ?? client).post<PostBotsByBotIdMemoryResponses, PostBotsByBotIdMemoryErrors, ThrowOnError>({
+    url: '/bots/{bot_id}/memory',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Compact memories
+ *
+ * Consolidate memories by merging similar/redundant entries using LLM.
+ *
+ * **ratio** (required, range (0,1]):
+ * - 0.8 = light compression, mostly dedup, keep ~80% of entries
+ * - 0.5 = moderate compression, merge similar facts, keep ~50%
+ * - 0.3 = aggressive compression, heavily consolidate, keep ~30%
+ *
+ * **decay_days** (optional): enable time decay — memories older than N days are treated as low priority and more likely to be merged/dropped.
+ */
+export const postBotsByBotIdMemoryCompact = <ThrowOnError extends boolean = false>(options: Options<PostBotsByBotIdMemoryCompactData, ThrowOnError>) => (options.client ?? client).post<PostBotsByBotIdMemoryCompactResponses, PostBotsByBotIdMemoryCompactErrors, ThrowOnError>({
+    url: '/bots/{bot_id}/memory/compact',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Rebuild memories from filesystem
+ *
+ * Read memory files from the container filesystem (source of truth) and restore missing entries to Qdrant
+ */
+export const postBotsByBotIdMemoryRebuild = <ThrowOnError extends boolean = false>(options: Options<PostBotsByBotIdMemoryRebuildData, ThrowOnError>) => (options.client ?? client).post<PostBotsByBotIdMemoryRebuildResponses, PostBotsByBotIdMemoryRebuildErrors, ThrowOnError>({ url: '/bots/{bot_id}/memory/rebuild', ...options });
+
+/**
+ * Search memory
+ *
+ * Search memory in the bot-shared namespace
+ */
+export const postBotsByBotIdMemorySearch = <ThrowOnError extends boolean = false>(options: Options<PostBotsByBotIdMemorySearchData, ThrowOnError>) => (options.client ?? client).post<PostBotsByBotIdMemorySearchResponses, PostBotsByBotIdMemorySearchErrors, ThrowOnError>({
+    url: '/bots/{bot_id}/memory/search',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get memory usage
+ *
+ * Query the estimated storage usage of current memories
+ */
+export const getBotsByBotIdMemoryUsage = <ThrowOnError extends boolean = false>(options: Options<GetBotsByBotIdMemoryUsageData, ThrowOnError>) => (options.client ?? client).get<GetBotsByBotIdMemoryUsageResponses, GetBotsByBotIdMemoryUsageErrors, ThrowOnError>({ url: '/bots/{bot_id}/memory/usage', ...options });
+
+/**
+ * Delete a single memory
+ *
+ * Delete a single memory by its ID
+ */
+export const deleteBotsByBotIdMemoryById = <ThrowOnError extends boolean = false>(options: Options<DeleteBotsByBotIdMemoryByIdData, ThrowOnError>) => (options.client ?? client).delete<DeleteBotsByBotIdMemoryByIdResponses, DeleteBotsByBotIdMemoryByIdErrors, ThrowOnError>({ url: '/bots/{bot_id}/memory/{id}', ...options });
+
+/**
+ * List bot history messages
+ *
+ * List messages for a bot history with optional pagination
+ */
+export const getBotsByBotIdMessages = <ThrowOnError extends boolean = false>(options: Options<GetBotsByBotIdMessagesData, ThrowOnError>) => (options.client ?? client).get<GetBotsByBotIdMessagesResponses, GetBotsByBotIdMessagesErrors, ThrowOnError>({ url: '/bots/{bot_id}/messages', ...options });
 
 /**
  * List schedules
@@ -501,6 +634,20 @@ export const postBotsByIdChannelByPlatformSendChat = <ThrowOnError extends boole
  * Evaluate bot attached resource checks in runtime
  */
 export const getBotsByIdChecks = <ThrowOnError extends boolean = false>(options: Options<GetBotsByIdChecksData, ThrowOnError>) => (options.client ?? client).get<GetBotsByIdChecksResponses, GetBotsByIdChecksErrors, ThrowOnError>({ url: '/bots/{id}/checks', ...options });
+
+/**
+ * List available check keys
+ *
+ * Returns all check keys available for a bot (builtin + MCP connections)
+ */
+export const getBotsByIdChecksKeys = <ThrowOnError extends boolean = false>(options: Options<GetBotsByIdChecksKeysData, ThrowOnError>) => (options.client ?? client).get<GetBotsByIdChecksKeysResponses, unknown, ThrowOnError>({ url: '/bots/{id}/checks/keys', ...options });
+
+/**
+ * Run a single bot check
+ *
+ * Evaluate one check key for a bot
+ */
+export const getBotsByIdChecksRunByKey = <ThrowOnError extends boolean = false>(options: Options<GetBotsByIdChecksRunByKeyData, ThrowOnError>) => (options.client ?? client).get<GetBotsByIdChecksRunByKeyResponses, unknown, ThrowOnError>({ url: '/bots/{id}/checks/run/{key}', ...options });
 
 /**
  * List bot members

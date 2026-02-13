@@ -42,6 +42,7 @@ type memorySearchPayload struct {
 	Filters          map[string]any `json:"filters,omitempty"`
 	Sources          []string       `json:"sources,omitempty"`
 	EmbeddingEnabled *bool          `json:"embedding_enabled,omitempty"`
+	NoStats          bool           `json:"no_stats,omitempty"`
 }
 
 type memoryDeletePayload struct {
@@ -236,6 +237,7 @@ func (h *MemoryHandler) ChatSearch(c echo.Context) error {
 			Filters:          filters,
 			Sources:          payload.Sources,
 			EmbeddingEnabled: payload.EmbeddingEnabled,
+			NoStats:          payload.NoStats,
 		}
 		resp, err := h.service.Search(c.Request().Context(), req)
 		if err != nil {
@@ -263,6 +265,7 @@ func (h *MemoryHandler) ChatSearch(c echo.Context) error {
 // @Tags memory
 // @Produce json
 // @Param bot_id path string true "Bot ID"
+// @Param no_stats query bool false "Skip sparse vector stats (top_k_buckets, cdf_curve) to reduce overhead"
 // @Success 200 {object} memory.SearchResponse
 // @Failure 400 {object} ErrorResponse
 // @Failure 403 {object} ErrorResponse
@@ -285,6 +288,7 @@ func (h *MemoryHandler) ChatGetAll(c echo.Context) error {
 		return err
 	}
 
+	noStats := strings.EqualFold(c.QueryParam("no_stats"), "true")
 	scopes, err := h.resolveEnabledScopes(c.Request().Context(), containerID)
 	if err != nil {
 		return err
@@ -294,6 +298,7 @@ func (h *MemoryHandler) ChatGetAll(c echo.Context) error {
 	for _, scope := range scopes {
 		req := memory.GetAllRequest{
 			Filters: buildNamespaceFilters(scope.Namespace, scope.ScopeID, nil),
+			NoStats: noStats,
 		}
 		resp, err := h.service.GetAll(c.Request().Context(), req)
 		if err != nil {

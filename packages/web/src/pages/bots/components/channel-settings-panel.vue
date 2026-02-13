@@ -193,7 +193,7 @@ const form = reactive<{
   status: string
 }>({
   credentials: {},
-  status: 'active',
+  status: 'inactive',
 })
 
 const visibleSecrets = reactive<Record<string, boolean>>({})
@@ -220,7 +220,8 @@ function initForm() {
     creds[key] = existingCredentials[key] ?? ''
   }
   form.credentials = creds
-  form.status = props.channelItem.config?.status ?? 'active'
+  const rawStatus = props.channelItem.config?.status ?? 'inactive'
+  form.status = (rawStatus === 'active' || rawStatus === 'verified') ? 'active' : 'inactive'
 }
 
 watch(

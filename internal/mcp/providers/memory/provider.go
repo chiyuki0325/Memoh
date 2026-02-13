@@ -136,6 +136,7 @@ func (p *Executor) CallTool(ctx context.Context, session mcpgw.ToolSessionContex
 			"scopeId":   botID,
 			"bot_id":    botID,
 		},
+		NoStats: true,
 	})
 	if err != nil {
 		p.logger.Warn("memory search namespace failed", slog.String("namespace", sharedMemoryNamespace), slog.Any("error", err))

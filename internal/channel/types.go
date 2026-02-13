@@ -306,27 +306,27 @@ func BindingCriteriaFromIdentity(identity Identity) BindingCriteria {
 
 // ChannelConfig holds the configuration for a bot's channel integration.
 type ChannelConfig struct {
-	ID               string
-	BotID            string
-	ChannelType      ChannelType
-	Credentials      map[string]any
-	ExternalIdentity string
-	SelfIdentity     map[string]any
-	Routing          map[string]any
-	Status           string
-	VerifiedAt       time.Time
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID               string         `json:"id"`
+	BotID            string         `json:"bot_id"`
+	ChannelType      ChannelType    `json:"channel_type"`
+	Credentials      map[string]any `json:"credentials"`
+	ExternalIdentity string         `json:"external_identity"`
+	SelfIdentity     map[string]any `json:"self_identity"`
+	Routing          map[string]any `json:"routing"`
+	Status           string         `json:"status"`
+	VerifiedAt       time.Time      `json:"verified_at"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
 }
 
 // ChannelIdentityBinding represents a channel identity's binding to a specific channel type.
 type ChannelIdentityBinding struct {
-	ID                string
-	ChannelType       ChannelType
-	ChannelIdentityID string
-	Config            map[string]any
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	ID                string         `json:"id"`
+	ChannelType       ChannelType    `json:"channel_type"`
+	ChannelIdentityID string         `json:"channel_identity_id"`
+	Config            map[string]any `json:"config"`
+	CreatedAt         time.Time      `json:"created_at"`
+	UpdatedAt         time.Time      `json:"updated_at"`
 }
 
 // UpsertConfigRequest is the input for creating or updating a channel configuration.

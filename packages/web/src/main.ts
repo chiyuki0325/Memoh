@@ -40,6 +40,11 @@ import {
   faGlobe,
   faBuilding,
   faBell,
+  faRotate,
+  faFileLines,
+  faBrain,
+  faCopy,
+  faCompress,
 } from '@fortawesome/free-solid-svg-icons'
 import {
   faRectangleList,
@@ -73,6 +78,11 @@ library.add(
   faGlobe,
   faBuilding,
   faBell,
+  faRotate,
+  faFileLines,
+  faBrain,
+  faCopy,
+  faCompress,
   faRectangleList,
   faTrashCan,
   faComments,

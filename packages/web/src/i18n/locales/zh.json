@@ -336,9 +336,9 @@
       "credentials": "凭据配置",
       "saveSuccess": "平台配置已保存",
       "saveFailed": "平台配置保存失败",
-    "requiredField": "{field} 为必填项",
-    "save": "保存平台配置",
-    "statusActive": "启用",
+      "requiredField": "{field} 为必填项",
+      "save": "保存平台配置",
+      "statusActive": "启用",
       "statusInactive": "停用",
       "deleteConfirm": "确定要移除这个平台吗？",
       "noAvailableTypes": "所有平台类型均已配置",
@@ -354,6 +354,30 @@
         "web": "Web",
         "local": "CLI"
       }
+    },
+    "memory": {
+      "title": "所忆皆在此间",
+      "files": "记忆文件",
+      "empty": "暂无记忆条目",
+      "searchPlaceholder": "搜索记忆...",
+      "newMemory": "新建记忆",
+      "compact": "压缩记忆",
+      "compactConfirm": "确定要压缩记忆吗？这会通过 AI 合并相似内容，可能会减少记忆条目数量。",
+      "compactRatio": "压缩率",
+      "compactRatioLight": "轻度 (0.8)",
+      "compactRatioMedium": "中度 (0.5)",
+      "compactRatioAggressive": "重度 (0.3)",
+      "compactRatioLightDesc": "保留大部分细节，主要是去重。",
+      "compactRatioMediumDesc": "合并相似事实，平衡压缩。",
+      "compactRatioAggressiveDesc": "深度整合，仅保留核心事实。",
+      "compactDecayDate": "以此日期之前的记忆会被优先压缩",
+      "compactSuccess": "记忆压缩成功",
+      "compactFailed": "记忆压缩失败",
+      "selectConversation": "选择对话",
+      "fromConversation": "从已有对话创建",
+      "noConversations": "暂无历史对话",
+      "idCopied": "ID 已复制",
+      "deleteConfirm": "确定要删除这条记忆吗？此操作无法撤销。"
     }
   }
 }

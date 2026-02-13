@@ -1050,6 +1050,12 @@ const docTemplate = `{
                         "name": "bot_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Skip sparse vector stats (top_k_buckets, cdf_curve) to reduce overhead",
+                        "name": "no_stats",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1506,6 +1512,71 @@ const docTemplate = `{
                     },
                     "503": {
                         "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bots/{bot_id}/messages": {
+            "get": {
+                "description": "List messages for a bot history with optional pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "messages"
+                ],
+                "summary": "List bot history messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bot ID",
+                        "name": "bot_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Before",
+                        "name": "before",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/message.Message"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/handlers.ErrorResponse"
                         }
@@ -4875,20 +4946,20 @@ const docTemplate = `{
         "channel.ChannelConfig": {
             "type": "object",
             "properties": {
-                "botID": {
+                "bot_id": {
                     "type": "string"
                 },
-                "channelType": {
+                "channel_type": {
                     "type": "string"
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "credentials": {
                     "type": "object",
                     "additionalProperties": {}
                 },
-                "externalIdentity": {
+                "external_identity": {
                     "type": "string"
                 },
                 "id": {
@@ -4898,17 +4969,17 @@ const docTemplate = `{
                     "type": "object",
                     "additionalProperties": {}
                 },
-                "selfIdentity": {
+                "self_identity": {
                     "type": "object",
                     "additionalProperties": {}
                 },
                 "status": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 },
-                "verifiedAt": {
+                "verified_at": {
                     "type": "string"
                 }
             }
@@ -4916,23 +4987,23 @@ const docTemplate = `{
         "channel.ChannelIdentityBinding": {
             "type": "object",
             "properties": {
-                "channelIdentityID": {
+                "channel_identity_id": {
                     "type": "string"
                 },
-                "channelType": {
+                "channel_type": {
                     "type": "string"
                 },
                 "config": {
                     "type": "object",
                     "additionalProperties": {}
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -5693,6 +5764,9 @@ const docTemplate = `{
                 "limit": {
                     "type": "integer"
                 },
+                "no_stats": {
+                    "type": "boolean"
+                },
                 "query": {
                     "type": "string"
                 },
@@ -5857,6 +5931,19 @@ const docTemplate = `{
                 }
             }
         },
+        "memory.CDFPoint": {
+            "type": "object",
+            "properties": {
+                "cumulative": {
+                    "description": "cumulative weight fraction [0.0, 1.0]",
+                    "type": "number"
+                },
+                "k": {
+                    "description": "rank position (1-based, sorted by value desc)",
+                    "type": "integer"
+                }
+            }
+        },
         "memory.CompactResult": {
             "type": "object",
             "properties": {
@@ -5894,6 +5981,12 @@ const docTemplate = `{
                 "bot_id": {
                     "type": "string"
                 },
+                "cdf_curve": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/memory.CDFPoint"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -5915,6 +6008,12 @@ const docTemplate = `{
                 },
                 "score": {
                     "type": "number"
+                },
+                "top_k_buckets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/memory.TopKBucket"
+                    }
                 },
                 "updated_at": {
                     "type": "string"
@@ -5964,6 +6063,19 @@ const docTemplate = `{
                 }
             }
         },
+        "memory.TopKBucket": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "description": "sparse dimension index (term hash)",
+                    "type": "integer"
+                },
+                "value": {
+                    "description": "weight (term frequency)",
+                    "type": "number"
+                }
+            }
+        },
         "memory.UsageResponse": {
             "type": "object",
             "properties": {
@@ -5978,6 +6090,57 @@ const docTemplate = `{
                 },
                 "total_text_bytes": {
                     "type": "integer"
+                }
+            }
+        },
+        "message.Message": {
+            "type": "object",
+            "properties": {
+                "bot_id": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "external_message_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "route_id": {
+                    "type": "string"
+                },
+                "sender_avatar_url": {
+                    "type": "string"
+                },
+                "sender_channel_identity_id": {
+                    "type": "string"
+                },
+                "sender_display_name": {
+                    "type": "string"
+                },
+                "sender_user_id": {
+                    "type": "string"
+                },
+                "source_reply_to_message_id": {
+                    "type": "string"
                 }
             }
         },
