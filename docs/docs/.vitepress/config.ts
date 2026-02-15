@@ -31,7 +31,7 @@ export default defineConfig({
           link: '/index.md'
         },
         {
-          text: 'Getting Started',
+          text: 'About Memoh',
           link: '/getting-started.md'
         },
         {
@@ -44,6 +44,15 @@ export default defineConfig({
             {
               text: 'config.toml',
               link: '/installation/config-toml.md'
+            }
+          ]
+        },
+        {
+          text: 'Getting Started',
+          items: [
+            {
+              text: 'Provider and Model',
+              link: '/getting-started/provider-and-model.md'
             }
           ]
         },
@@ -87,56 +96,12 @@ export default defineConfig({
               link: '/cli/chat.md'
             }
           ]
-        },
-        {
-          text: 'Core Concepts',
-          items: [
-            {
-              text: 'Concepts Overview',
-              link: '/concepts/index.md'
-            },
-            {
-              text: 'Accounts and Linking',
-              link: '/concepts/identity-and-binding.md'
-            }
-          ]
-        },
-        {
-          text: 'Documentation Style Guide',
-          items: [
-            {
-              text: 'Terminology Rules',
-              link: '/style/terminology.md'
-            }
-          ]
         }
       ],
       '/zh/': [
         {
           text: '文档总览',
           link: '/zh/index.md'
-        },
-        {
-          text: '核心概念',
-          items: [
-            {
-              text: '概念总览',
-              link: '/zh/concepts/index.md'
-            },
-            {
-              text: '账号模型与绑定',
-              link: '/zh/concepts/identity-and-binding.md'
-            }
-          ]
-        },
-        {
-          text: '文档写作规范',
-          items: [
-            {
-              text: '术语规范',
-              link: '/zh/style/terminology.md'
-            }
-          ]
         }
       ]
     },

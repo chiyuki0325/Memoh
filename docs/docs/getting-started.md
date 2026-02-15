@@ -1,4 +1,4 @@
-# Getting Started
+# About Memoh
 
 ## What is Memoh?
 

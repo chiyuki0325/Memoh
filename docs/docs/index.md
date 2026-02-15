@@ -4,11 +4,7 @@ Memoh is a multi-member, structured long-memory, containerized AI agent system. 
 
 ## Documentation
 
-- **[Getting Started](/getting-started)** — What Memoh is, key features, and installation links.
+- **[About Memoh](/getting-started)** — What Memoh is, key features, and installation links.
 - **[Installation](/installation/docker)** — [Docker](/installation/docker) (recommended) and [config.toml](/installation/config-toml) reference.
+- **[Getting Started](/getting-started/provider-and-model)** — Configure provider and model.
 - **[CLI](/cli/)** — Command-line tool for bots, channels, providers, models, schedules, and chat.
-- **[Core Concepts](/concepts/)** — [Concepts overview](/concepts/) and [Accounts and linking](/concepts/identity-and-binding).
-
-## For Contributors
-
-- [Terminology Rules](/style/terminology) — Documentation style guide.
