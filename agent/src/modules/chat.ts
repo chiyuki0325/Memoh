@@ -95,6 +95,7 @@ export const chatModule = new Elysia({ prefix: '/chat' })
     }),
   })
   .post('/trigger-schedule', async ({ body, bearer }) => {
+    console.log('trigger-schedule', body)
     const authFetcher = createAuthFetcher(bearer)
     const { triggerSchedule } = createAgent({
       model: body.model as ModelConfig,

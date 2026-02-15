@@ -314,10 +314,9 @@ func (r *Resolver) TriggerSchedule(ctx context.Context, botID string, payload sc
 		return fmt.Errorf("schedule command is required")
 	}
 
-	chatID := "schedule-" + payload.ID
 	req := conversation.ChatRequest{
 		BotID:  botID,
-		ChatID: chatID,
+		ChatID: botID,
 		Query:  payload.Command,
 		UserID: payload.OwnerUserID,
 		Token:  token,
