@@ -252,15 +252,35 @@ func (r *Resolver) resolve(ctx context.Context, req conversation.ChatRequest) (r
 	maxCtx := coalescePositiveInt(req.MaxContextLoadTime, botSettings.MaxContextLoadTime, defaultMaxContextMinutes)
 	maxTokens := botSettings.MaxContextTokens
 
+	// Build non-history parts first so we can reserve their token cost before
+	// trimming history messages.
+	memoryMsg := r.loadMemoryContextMessage(ctx, req)
+	var overhead int
+	if memoryMsg != nil {
+		overhead += estimateMessageTokens(*memoryMsg)
+	}
+	for _, m := range req.Messages {
+		overhead += estimateMessageTokens(m)
+	}
+	// Reserve space for the system prompt built by the agent gateway
+	// (IDENTITY.md, SOUL.md, TOOLS.md, skills, boilerplate, user prompt, etc.).
+	const systemPromptReserve = 4096
+	overhead += systemPromptReserve
+
+	historyBudget := maxTokens - overhead
+	if historyBudget < 0 {
+		historyBudget = 0
+	}
+
 	var messages []conversation.ModelMessage
 	if !skipHistory && r.conversationSvc != nil {
 		loaded, loadErr := r.loadMessages(ctx, req.ChatID, maxCtx)
 		if loadErr != nil {
 			return resolvedContext{}, loadErr
 		}
-		messages = trimMessagesByTokens(loaded, maxTokens)
+		messages = trimMessagesByTokens(loaded, historyBudget)
 	}
-	if memoryMsg := r.loadMemoryContextMessage(ctx, req); memoryMsg != nil {
+	if memoryMsg != nil {
 		messages = append(messages, *memoryMsg)
 	}
 	messages = append(messages, req.Messages...)
