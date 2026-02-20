@@ -17,7 +17,7 @@ import {
   Schedule,
 } from './types'
 import { ModelInput, hasInputModality } from './types/model'
-import { system, schedule, user, subagentSystem } from './prompts'
+import { system, schedule, subagentSystem } from './prompts'
 import { AuthFetcher } from './index'
 import { createModel } from './model'
 import { AgentAction } from './types/action'
@@ -27,7 +27,7 @@ import {
   dedupeAttachments,
   AttachmentsStreamExtractor,
 } from './utils/attachments'
-import type { ContainerFileAttachment, GatewayInputAttachment } from './types/attachment'
+import type { GatewayInputAttachment } from './types/attachment'
 import { getMCPTools } from './tools/mcp'
 import { getTools } from './tools'
 import { buildIdentityHeaders } from './utils/headers'
@@ -40,28 +40,6 @@ export const buildNativeImageParts = (attachments: GatewayInputAttachment[]): Im
       Boolean(attachment.payload),
     )
     .map((attachment) => ({ type: 'image', image: attachment.payload } as ImagePart))
-}
-
-const buildFileRefs = (
-  attachments: GatewayInputAttachment[],
-  supportsImage: boolean,
-): ContainerFileAttachment[] => {
-  return attachments
-    .filter((attachment) => {
-      if (attachment.transport !== 'tool_file_ref' || !attachment.payload) {
-        return false
-      }
-      if (attachment.type === 'file') {
-        return true
-      }
-      // When image native modality is unavailable, keep image refs as tool files.
-      return !supportsImage && attachment.type === 'image'
-    })
-    .map((attachment) => ({
-      type: 'file' as const,
-      path: attachment.payload,
-      metadata: attachment.metadata,
-    }))
 }
 
 export const createAgent = (
@@ -210,21 +188,11 @@ export const createAgent = (
 
   const generateUserPrompt = (input: AgentInput) => {
     const supportsImage = hasInputModality(modelConfig, ModelInput.Image)
-
-    const allFiles = buildFileRefs(input.attachments, supportsImage)
     const imageParts = supportsImage ? buildNativeImageParts(input.attachments) : []
 
-    const text = user(input.query, {
-      channelIdentityId: identity.channelIdentityId || '',
-      displayName: identity.displayName || 'User',
-      channel: currentChannel,
-      conversationType: identity.conversationType || 'direct',
-      date: new Date(),
-      attachments: allFiles,
-    })
     const userMessage: UserModelMessage = {
       role: 'user',
-      content: [{ type: 'text', text }, ...imageParts],
+      content: [{ type: 'text', text: input.query }, ...imageParts],
     }
     return userMessage
   }

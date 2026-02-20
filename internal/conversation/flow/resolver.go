@@ -308,6 +308,18 @@ func (r *Resolver) resolve(ctx context.Context, req conversation.ChatRequest) (r
 		usableSkills = []gatewaySkill{}
 	}
 
+	attachments := r.routeAndMergeAttachments(ctx, chatModel, req)
+	displayName := r.resolveDisplayName(ctx, req)
+
+	headerifiedQuery := FormatUserHeader(
+		strings.TrimSpace(req.SourceChannelIdentityID),
+		displayName,
+		req.CurrentChannel,
+		strings.TrimSpace(req.ConversationType),
+		extractFileRefPaths(attachments),
+		req.Query,
+	)
+
 	payload := gatewayRequest{
 		Model: gatewayModelConfig{
 			ModelID:    chatModel.ModelID,
@@ -323,17 +335,17 @@ func (r *Resolver) resolve(ctx context.Context, req conversation.ChatRequest) (r
 		Messages:          nonNilModelMessages(messages),
 		Skills:            nonNilStrings(skills),
 		UsableSkills:      usableSkills,
-		Query:             req.Query,
+		Query:             headerifiedQuery,
 		Identity: gatewayIdentity{
 			BotID:             req.BotID,
 			ContainerID:       containerID,
 			ChannelIdentityID: strings.TrimSpace(req.SourceChannelIdentityID),
-			DisplayName:       r.resolveDisplayName(ctx, req),
+			DisplayName:       displayName,
 			CurrentPlatform:   req.CurrentChannel,
 			ConversationType:  strings.TrimSpace(req.ConversationType),
 			SessionToken:      req.ChatToken,
 		},
-		Attachments: r.routeAndMergeAttachments(ctx, chatModel, req),
+		Attachments: attachments,
 	}
 
 	return resolvedContext{payload: payload, model: chatModel, provider: provider}, nil
@@ -347,6 +359,7 @@ func (r *Resolver) Chat(ctx context.Context, req conversation.ChatRequest) (conv
 	if err != nil {
 		return conversation.ChatResponse{}, err
 	}
+	req.Query = rc.payload.Query
 	resp, err := r.postChat(ctx, rc.payload, req.Token)
 	if err != nil {
 		return conversation.ChatResponse{}, err
@@ -434,6 +447,7 @@ func (r *Resolver) StreamChat(ctx context.Context, req conversation.ChatRequest)
 			errCh <- err
 			return
 		}
+		streamReq.Query = rc.payload.Query
 		if !streamReq.UserMessagePersisted {
 			if err := r.persistUserMessage(ctx, streamReq); err != nil {
 				r.logger.Error("gateway stream persist user message failed",
@@ -1653,4 +1667,68 @@ func parseResolverUUID(id string) (pgtype.UUID, error) {
 		return pgtype.UUID{}, fmt.Errorf("empty id")
 	}
 	return db.ParseUUID(id)
+}
+
+// FormatUserHeader wraps a user query with YAML front-matter metadata so
+// the LLM sees structured context (sender, channel, time, attachments)
+// alongside the raw message. This must be the single source of truth for
+// user-message formatting — the agent gateway must NOT add its own header.
+func FormatUserHeader(channelIdentityID, displayName, channel, conversationType string, attachmentPaths []string, query string) string {
+	var sb strings.Builder
+	sb.WriteString("---\n")
+	writeYAMLString(&sb, "channel-identity-id", channelIdentityID)
+	writeYAMLString(&sb, "display-name", displayName)
+	writeYAMLString(&sb, "channel", channel)
+	writeYAMLString(&sb, "conversation-type", conversationType)
+	writeYAMLString(&sb, "time", time.Now().UTC().Format(time.RFC3339))
+	if len(attachmentPaths) > 0 {
+		sb.WriteString("attachments:\n")
+		for _, p := range attachmentPaths {
+			sb.WriteString("  - ")
+			sb.WriteString(p)
+			sb.WriteByte('\n')
+		}
+	} else {
+		sb.WriteString("attachments: []\n")
+	}
+	sb.WriteString("---\n")
+	sb.WriteString(query)
+	return sb.String()
+}
+
+func writeYAMLString(sb *strings.Builder, key, value string) {
+	sb.WriteString(key)
+	sb.WriteString(": ")
+	if value == "" || needsYAMLQuote(value) {
+		sb.WriteByte('"')
+		sb.WriteString(strings.ReplaceAll(value, `"`, `\"`))
+		sb.WriteByte('"')
+	} else {
+		sb.WriteString(value)
+	}
+	sb.WriteByte('\n')
+}
+
+func needsYAMLQuote(s string) bool {
+	if s == "" {
+		return true
+	}
+	for _, c := range s {
+		if c == ':' || c == '#' || c == '"' || c == '\'' || c == '{' || c == '}' || c == '[' || c == ']' || c == ',' || c == '\n' {
+			return true
+		}
+	}
+	return false
+}
+
+// extractFileRefPaths collects container file paths from gateway attachments
+// that use the tool_file_ref transport (files already written to the bot container).
+func extractFileRefPaths(attachments []any) []string {
+	var paths []string
+	for _, att := range attachments {
+		if ga, ok := att.(gatewayAttachment); ok && ga.Transport == gatewayTransportToolFileRef && strings.TrimSpace(ga.Payload) != "" {
+			paths = append(paths, ga.Payload)
+		}
+	}
+	return paths
 }

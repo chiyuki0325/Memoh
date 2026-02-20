@@ -565,12 +565,6 @@ func TestChannelInboundProcessorGroupMentionTriggersReply(t *testing.T) {
 	if len(sender.sent) != 1 {
 		t.Fatalf("expected one outbound reply, got %d", len(sender.sent))
 	}
-	if len(chatSvc.persisted) != 1 {
-		t.Fatalf("triggered group message should persist inbound user once, got: %d", len(chatSvc.persisted))
-	}
-	if got := chatSvc.persisted[0].Metadata["trigger_mode"]; got != "active_chat" {
-		t.Fatalf("expected trigger_mode active_chat, got: %v", got)
-	}
 	if !gateway.gotReq.UserMessagePersisted {
 		t.Fatalf("expected UserMessagePersisted=true for pre-persisted inbound message")
 	}

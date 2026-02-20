@@ -641,9 +641,23 @@ func (p *ChannelInboundProcessor) persistInboundUser(
 	if botID == "" {
 		return false
 	}
+	var attachmentPaths []string
+	for _, att := range attachments {
+		if ap := strings.TrimSpace(att.Path); ap != "" {
+			attachmentPaths = append(attachmentPaths, ap)
+		}
+	}
+	headerifiedQuery := flow.FormatUserHeader(
+		strings.TrimSpace(identity.ChannelIdentityID),
+		strings.TrimSpace(identity.DisplayName),
+		msg.Channel.String(),
+		strings.TrimSpace(msg.Conversation.Type),
+		attachmentPaths,
+		query,
+	)
 	payload, err := json.Marshal(conversation.ModelMessage{
 		Role:    "user",
-		Content: conversation.NewTextContent(query),
+		Content: conversation.NewTextContent(headerifiedQuery),
 	})
 	if err != nil {
 		if p.logger != nil {
