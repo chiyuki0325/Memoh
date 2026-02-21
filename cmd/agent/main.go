@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	containerd "github.com/containerd/containerd/v2/client"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
@@ -131,12 +130,11 @@ func runServe() {
 			provideConfig,
 			boot.ProvideRuntimeConfig,
 			provideLogger,
-			provideContainerdClient,
+			provideContainerService,
 			provideDBConn,
 			provideDBQueries,
 
-			// containerd & mcp infrastructure
-			fx.Annotate(ctr.NewDefaultService, fx.As(new(ctr.Service))),
+			// container & mcp infrastructure
 			provideMCPManager,
 
 			// memory pipeline
@@ -255,18 +253,18 @@ func provideLogger(cfg config.Config) *slog.Logger {
 	return logger.L
 }
 
-func provideContainerdClient(lc fx.Lifecycle, rc *boot.RuntimeConfig) (*containerd.Client, error) {
-	factory := ctr.DefaultClientFactory{SocketPath: rc.ContainerdSocketPath}
-	client, err := factory.New(context.Background())
+func provideContainerService(lc fx.Lifecycle, log *slog.Logger, cfg config.Config, rc *boot.RuntimeConfig) (ctr.Service, error) {
+	svc, cleanup, err := ctr.ProvideService(context.Background(), log, cfg, rc.ContainerBackend)
 	if err != nil {
-		return nil, fmt.Errorf("connect containerd: %w", err)
+		return nil, err
 	}
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
-			return client.Close()
+			cleanup()
+			return nil
 		},
 	})
-	return client, nil
+	return svc, nil
 }
 
 func provideDBConn(lc fx.Lifecycle, cfg config.Config) (*pgxpool.Pool, error) {
@@ -444,8 +442,8 @@ func provideChannelLifecycleService(channelStore *channel.Store, channelManager 
 // containerd handler & tool gateway
 // ---------------------------------------------------------------------------
 
-func provideContainerdHandler(log *slog.Logger, service ctr.Service, manager *mcp.Manager, cfg config.Config, botService *bots.Service, accountService *accounts.Service, policyService *policy.Service, queries *dbsqlc.Queries) *handlers.ContainerdHandler {
-	return handlers.NewContainerdHandler(log, service, manager, cfg.MCP, cfg.Containerd.Namespace, botService, accountService, policyService, queries)
+func provideContainerdHandler(log *slog.Logger, service ctr.Service, manager *mcp.Manager, cfg config.Config, rc *boot.RuntimeConfig, botService *bots.Service, accountService *accounts.Service, policyService *policy.Service, queries *dbsqlc.Queries) *handlers.ContainerdHandler {
+	return handlers.NewContainerdHandler(log, service, manager, cfg.MCP, cfg.Containerd.Namespace, rc.ContainerBackend, botService, accountService, policyService, queries)
 }
 
 func provideToolGatewayService(log *slog.Logger, cfg config.Config, channelManager *channel.Manager, registry *channel.Registry, routeService *route.DBService, scheduleService *schedule.Service, memoryService *memory.Service, chatService *conversation.Service, accountService *accounts.Service, settingsService *settings.Service, searchProviderService *searchproviders.Service, manager *mcp.Manager, containerdHandler *handlers.ContainerdHandler, mcpConnService *mcp.ConnectionService, mediaService *media.Service, inboxService *inbox.Service) *mcp.ToolGatewayService {
