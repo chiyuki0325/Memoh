@@ -1,4 +1,4 @@
--- 0012_model_id_unique_per_provider
+-- 0013_model_id_unique_per_provider
 -- Change model_id uniqueness from global to per provider.
 
 DO $$
