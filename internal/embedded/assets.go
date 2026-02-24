@@ -8,10 +8,7 @@ import (
 	"runtime"
 )
 
-// Include underscore/dot-prefixed files from bundled build output (e.g. Vite helper chunks).
-// Keep the explicit _plugin pattern to ensure helper chunks are embedded for production SPA routing.
-//
-//go:embed all:web all:web/assets/* all:web/assets/_plugin-vue_export-helper-*.js all:web/channels/* all:agent all:bun
+//go:embed all:web all:agent all:bun
 var assetsFS embed.FS
 
 func AssetsFS() fs.FS {
